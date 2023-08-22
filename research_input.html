@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+<title>리서치 입력 프로그램</title>
+
+<script>
+//----------------------- 입력 규칙 -----------------------//
+const research_rule = {};
+//----------------------- 입력 규칙 -----------------------//
+</script>
+
+<script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+</head>
+<body>
+    <fieldset>
+        <legend>리서치 입력</legend>
+        입력 제한 규칙: <input type="text" id="rule" name="rule" disabled><br>
+        <input type="text" id="result" name="result">&nbsp;<input type="button" id="put" value="입력"><br>
+        <input type="text" id="illegal" name="illegal" disabled>
+    </fieldset>
+    <div>
+        <!-- 엑셀 출력 -->
+        <input type="button" id="excel" value="Excel">
+
+        <!-- 입력 결과 출력 (삭제 기능) -->
+        <table id="sheet1">
+        </table>
+    </div>
+    
+<script>
+$(document).ready(function(){
+    // 입력규칙 읽어서 설정
+    if ($.isEmptyObject(research_rule)) {
+        alert("입력 규칙 설정 후 사용 가능합니다.");
+        $("#result, #put, #excel").attr("disabled", true);
+        return;
+    }
+
+    // table head 설정
+    // $("#sheet1").append()
+});
+</script>
+</body>
+</html>
