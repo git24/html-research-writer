@@ -9,18 +9,31 @@
 <style>
 .tbl_result {
     width: 100%;
-    border: 1px solid;
+    border-collapse: collapse;
+}
+
+.tbl_result th, .tbl_result td {
+    border: 1px solid black;
 }
 </style>
 
+
+<script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+
+
 <script>
 //----------------------- 입력 규칙 -----------------------//
-const ri_rule = {};
+const ri_rule = {
+    head: ["id","1","2","3","3-1","3-2","4","5","6","7","8"],
+    rule: [{},{},{},{}]
+};
 //----------------------- 입력 규칙 -----------------------//
 
 const ri_main = {
     s2ab(s) { 
-        // 참고 출처 : https://redstapler.co/sheetjs-tutorial-create-xlsx/
+        // ref : https://redstapler.co/sheetjs-tutorial-create-xlsx/
         var buf = new ArrayBuffer(s.length); //convert s to arrayBuffer
         var view = new Uint8Array(buf);  //create uint8array as viewer
         for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF; //convert to octet
@@ -29,47 +42,50 @@ const ri_main = {
 
     eventHandler : {
         onClickInput : function() {
-            // table head 설정
-            // $("#sheet1").append()
+            
+            // 입력값 체크
+            var newRow = $("<tr>");
+            
+            // 첫번째는 삭제 버튼
+            newRow.append($("<td>").append($("<a>").addClass("delete-link").attr("href", "#").text("삭제")));
+
+            var inputData = $("#result").val().split(",");
+            for(var i = 0; i < ri_rule.head.length; i++) {
+                if (i < inputData.length) {
+                    newRow.append($("<td>").text(inputData[i]));
+                } else {
+                    newRow.append($("<td>").text(""));
+                }
+            }
+
+            var lastRow = $("#sheet1 tbody tr:last");
+            if (lastRow.length) {
+                lastRow.after(newRow);
+            } else {
+                // 테이블에 행이 없는 경우, tbody 내부에 직접 추가합니다.
+                $("#sheet1 tbody").append(newRow);
+            }
+
+            // 현재 행 삭제 이벤트 추가
+            $(".delete-link").on("click", function(e) {        
+                e.preventDefault();
+                $(this).closest("tr").remove();
+            });
         },
         onClickExcel : function() {
-            // step 1. workbook 생성
+            
             var workbook = XLSX.utils.book_new();
+            var worksheet = XLSX.utils.table_to_sheet(document.getElementById('sheet1'));
 
-            // step 2. 시트 만들기 
-            var newWorksheet = ri_main.excelHandler.getWorksheet();
+            // TODO: 삭제 버튼 컬럼 삭제, 모든 입력값 문자열로 취급
 
-            // step 3. workbook에 새로만든 워크시트에 이름을 주고 붙인다.  
-            XLSX.utils.book_append_sheet(workbook, newWorksheet, ri_main.excelHandler.getSheetName());
-
-            // step 4. 엑셀 파일 만들기 
+            XLSX.utils.book_append_sheet(workbook, worksheet, "sheet1");
             var workbookFile = XLSX.write(workbook, {bookType:'xlsx',  type: 'binary'});
-
-            // step 5. 엑셀 파일 내보내기 
-            saveAs(new Blob([ri_main.s2ab(workbookFile)],{type:"application/octet-stream"}), ri_main.excelHandler.getExcelFileName());
+            saveAs(new Blob([ri_main.s2ab(workbookFile)],{type:"application/octet-stream"}), "research_result.xlsx");
         }
-    },
-
-    excelHandler : {
-        getExcelFileName : function(){
-            return 'research_result.xlsx';
-        },
-        getSheetName : function(){
-            return 'sheet1';
-        },
-        getExcelData : function(){
-            return document.getElementById('sheet1'); 
-        },
-        getWorksheet : function(){
-            return XLSX.utils.table_to_sheet(this.getExcelData());
-        }
-    }    
+    }
 };
 </script>
-
-<script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 
 </head>
 <body>
@@ -85,43 +101,26 @@ const ri_main = {
 
         <!-- 입력 결과 출력 (삭제 기능) -->
         <table id="sheet1" class="tbl_result">
-            <thead>
-                <tr>
-                    <th scope="col">헤드1</th>
-                    <th scope="col">헤드2</th>
-                    <th scope="col">헤드3</th>
-                    <th scope="col">헤드4</th>
-                    <th scope="col">헤드5</th>
-                    <th scope="col">헤드6</th>
-                    <th scope="col">헤드7</th>
-                    <th scope="col">헤드8</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>111</td>
-                    <td>222</td>
-                    <td>333</td>
-                    <td>444</td>
-                    <td>555</td>
-                    <td>666</td>
-                    <td>777</td>
-                    <td>888</td>
-                </tr>
-            </tbody>        
+            <thead></thead>
+            <tbody></tbody>        
         </table>
     </div>
     
 <script>
 $(document).ready(function(){
-    // 입력규칙 읽어서 설정
+
     if ($.isEmptyObject(ri_rule)) {
-/*        
         alert("입력 규칙 설정 후 사용 가능합니다.");
         $("#result, #put, #excel").attr("disabled", true);
         return;
-*/        
     }
+
+    var newRow = $("<tr>");
+    newRow.append($("<th>").text("구분"));
+    ri_rule.head.forEach(e => {
+        newRow.append($("<th>").text(e));
+    });
+    $("#sheet1 thead").empty().append(newRow);
 });
 </script>
 </body>
