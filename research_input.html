@@ -200,9 +200,12 @@ const ri_main = {
 
         for(var i = 0; i < ri_rule.head.length; i++) {
             if (i < data.length) {
-                newRow.append($("<td>").text(data[i].trim()));
+                if (typeof data[i] === "string") {
+                    data[i] = data[i].trim()
+                }
+                newRow.append($("<td>").text(data[i]));
             } else {
-                newRow.append($("<td>").text(""));
+                newRow.append($("<td>"));
             }
         }
 
@@ -261,7 +264,35 @@ const ri_main = {
             return false;
         }
 
+        // TODO: 입력 제한 조건
+
         return true;
+    },
+
+    getTableData : function() {
+        var theadData = [];
+        $("#sheet1 thead th").each(function() {
+            var data = String($(this).text());
+            if ("구분" !== data) {
+                theadData.push(data);
+            }
+        });
+
+        var tbodyData = [];
+        $("#sheet1 tbody tr").each(function() {
+            var rowData = [];
+            $(this).find("td").each(function() {
+                var data = String($(this).text());
+                if ("삭제" !== data) {
+                    rowData.push(data);
+                }
+            });
+            tbodyData.push(rowData);
+        });
+
+        tbodyData.unshift(theadData)
+
+        return tbodyData;
     },
 
     eventHandler : {
@@ -279,11 +310,23 @@ const ri_main = {
 
             ri_main.triggerInputTable(values);            
         },
-        onClickDownload : function() {            
-            var workbook = XLSX.utils.book_new();
-            var worksheet = XLSX.utils.table_to_sheet(document.getElementById('sheet1'));
+        onClickDownload : function() {
+            var tableData = ri_main.getTableData();
 
-            // TODO: 삭제 버튼 컬럼 삭제, 모든 입력값 문자열로 취급
+            if (tableData.length < 1) {
+                alert("저장할 내용이 없습니다.");
+                return;
+            }
+
+            var workbook = XLSX.utils.book_new();
+            var worksheet = XLSX.utils.aoa_to_sheet(tableData);
+
+            for (var key in worksheet) {
+                if (worksheet.hasOwnProperty(key) && worksheet[key].t === "n") {
+                    worksheet[key].t = "s";
+                    worksheet[key].v = String(worksheet[key].v);
+                }
+            }
 
             XLSX.utils.book_append_sheet(workbook, worksheet, "sheet1");
             var workbookFile = XLSX.write(workbook, {bookType:'xlsx',  type: 'binary'});
