@@ -114,6 +114,10 @@ input[type="file"] {
     opacity: 0.9;
 }
 
+.rule-invalid {
+    background-color: #fdc7c3;
+}
+
 .hidden {
     display: none;
 }
@@ -129,8 +133,19 @@ input[type="file"] {
 //----------------------- 입력 규칙 -----------------------//
 const ri_rule = {
     caution: "<h3>주의사항</h3>입력 주의사항이나 코드표 관련<br>남자는 1로 입력, 여자는 2로 입력",
-    head: ["id","1","2","3","3-1","3-2","4","5","6","7","8"],
-    rule: [{},{},{},{}]
+    cols: [
+        {name: "id"},
+        {name: "1"},
+        {name: "2"},
+        {name: "3", rule: [{equal: "3", to: "5"}, {unequal: "3", to: "4"}]},
+        {name: "3-1", rule: [{equal: "3", to: "5"}, {unequal: "3", empty: "3-2"}]},
+        {name: "3-2"},
+        {name: "4", rule: [{equal: "30", to: "8"}, {greater: "30", to: "8"}, {less: "30", to: "7"}]},
+        {name: "5"},
+        {name: "6"},
+        {name: "7"},
+        {name: "8"},
+    ]
 };
 //----------------------- 입력 규칙 -----------------------//
 
@@ -157,8 +172,8 @@ const ri_main = {
     initFormTableHead : function() {
         // 입력 폼 테이블 thead 설정
         var newRow = $("<tr>");
-        ri_rule.head.forEach(e => {
-            newRow.append($("<th>").text(e));
+        ri_rule.cols.forEach(e => {
+            newRow.append($("<th>").text(e.name));
         });
         $(".tbl-input thead").append(newRow);
     },
@@ -166,7 +181,7 @@ const ri_main = {
     initFormTableBody : function() {
         // 입력 폼 테이블 tbody 설정
         var newRow = $("<tr>");
-        ri_rule.head.forEach(e => {
+        ri_rule.cols.forEach(e => {
             newRow.append($("<td>").append($("<input>", {type: "text", class: "input-box"})));
         });
         $(".tbl-input tbody").append(newRow);
@@ -176,8 +191,9 @@ const ri_main = {
         // 입력 결과 테이블 설정
         var newRow = $("<tr>");
         newRow.append($("<th>").text("구분"));
-        ri_rule.head.forEach(e => {
-            newRow.append($("<th>").text(e));
+            newRow.append($("<th>").text("검증"));
+        ri_rule.cols.forEach(e => {
+            newRow.append($("<th>").text(e.name));
         });
         $(".tbl-result thead").append(newRow);
     },
@@ -193,12 +209,24 @@ const ri_main = {
         $(".tbl-input tr input[type='text'], .input-form-box").val("");
     },
 
-    inputTable : function(data) {
+    isPassRule : function(data) {
+        // TODO: 룰 검증
+        return true;
+    },
+
+    inputTable : function(data, upload) {
         // 첫번째는 삭제 버튼
         var newRow = $("<tr>");                
         newRow.append($("<td>").append($("<a>").addClass("delete-link").addClass("button").attr("href", "#").text("삭제")));
 
-        for(var i = 0; i < ri_rule.head.length; i++) {
+        if (ri_main.isPassRule(data)) {
+            newRow.append($("<td>").append("TRUE"));
+        } else {
+            newRow.addClass("rule-invalid");
+            newRow.append($("<td>").append("FALSE"));
+        }        
+
+        for(var i = 0; i < ri_rule.cols.length; i++) {
             if (i < data.length) {
                 if (typeof data[i] === "string") {
                     data[i] = data[i].trim()
@@ -234,17 +262,19 @@ const ri_main = {
         });
     },
 
-    triggerInputTable : function(values) {
+    triggerInputTable : function(values, noScroll) {
         ri_main.inputTable(values);
 
         if ($("#autoInit").prop("checked")) {
             ri_main.clearForm();
         }
 
-        ri_main.scrollToEnd();
+        if (!noScroll) {
+            ri_main.scrollToEnd();
+        }        
     },
 
-    validateInputValue : function(values) {
+    isEmptyValue : function(values) {
         if (!values) {
             return false;
         }
@@ -253,20 +283,13 @@ const ri_main = {
             return false;
         }
 
-        var isEmpty = true;
-        for (let i = 0; isEmpty && i < values.length; i++) {
+        for (let i = 0; i < values.length; i++) {
             if (values[i].length > 0) {
-                isEmpty = false;
+                return true;
             }
         }
 
-        if (isEmpty) {
-            return false;
-        }
-
-        // TODO: 입력 제한 조건
-
-        return true;
+        return false;
     },
 
     getTableData : function() {
@@ -304,7 +327,7 @@ const ri_main = {
 
             var separator = $("#separator").val();            
             var values = value.split(separator);
-            if (!ri_main.validateInputValue(values)) {
+            if (!ri_main.isEmptyValue(values)) {
                 return;
             }
 
@@ -333,6 +356,11 @@ const ri_main = {
             saveAs(new Blob([ri_main.s2ab(workbookFile)],{type:"application/octet-stream"}), "research_result.xlsx");
         },
         onClickUpload : function() {
+            // 테이블 초기화 후 진행되므로 경고
+            if (!confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
+                return;
+            }
+
             const fileInput = document.getElementById('excelUpload');
             const file = fileInput.files[0];
 
@@ -340,30 +368,26 @@ const ri_main = {
                 return;
             }
 
+            $(".tbl-result tbody").empty();
+
             const reader = new FileReader();
             reader.onload = function (event) {
                 const data = event.target.result;
                 const workbook = XLSX.read(data, { type: 'binary' });
                 const sheetName = workbook.SheetNames[0];
                 const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-                // 테이블 초기화 후 진행되므로 경고
-                if (!confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
-                    return;
-                }
-
-                $(".tbl-result tbody").empty();
+                
                 sheetData.forEach(function(row){
-                    var cols = [];
-                    ri_rule.head.forEach(e => {
+                    var values = [];
+                    ri_rule.cols.forEach(e => {
                         // 해당 값이 있는지 체크 후 처리
-                        if (row.hasOwnProperty(e)) {
-                            cols.push(row[e]);
+                        if (row.hasOwnProperty(e.name)) {
+                            values.push(row[e.name]);
                         } else {
-                            cols.push("");
+                            values.push("");
                         }                                
                     });
-                    ri_main.triggerInputTable(cols);
+                    ri_main.triggerInputTable(values, true);
                 });
             };
             reader.readAsBinaryString(file);
@@ -375,7 +399,7 @@ const ri_main = {
                     return $(this).val();
                 }).get();
 
-                if (!ri_main.validateInputValue(rowData)) {
+                if (!ri_main.isEmptyValue(rowData)) {
                     return;
                 }
 
