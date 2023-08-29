@@ -7,13 +7,115 @@
 <title>리서치 입력 프로그램</title>
 
 <style>
-.tbl_result {
-    width: 100%;
+body {
+    padding: 5px;
+    margin: 0;
+}
+
+label {
+    font-size: 14px;
+}
+
+table {
     border-collapse: collapse;
 }
 
-.tbl_result th, .tbl_result td {
-    border: 1px solid black;
+th, td {
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+
+th {
+    background-color: #f2f2f2;    
+}
+
+th:first-child, td:first-child {
+    width: 65px;
+    text-align: center;
+}
+
+input[type="file"] {
+    padding: 1px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.overflow {
+    overflow-x : auto;
+}
+
+.no-wrap {
+    white-space: nowrap;
+}
+
+.button {
+    display: inline-block;
+    padding: 5px;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* 호버(마우스 올릴 때) 스타일 */
+.button:hover {
+    background-color: #0056b3;
+}
+
+.tbl-input {
+    margin-bottom: 5px;
+}
+
+.tbl-result tr:hover {
+    background-color: #f2f2f2;
+}
+
+.tbl-result th {
+    position: sticky;
+    top: 241px;
+    z-index: 1;
+}
+
+.input-box {
+    width: 40px;
+}
+
+.top-fixed {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.top-fixed div {
+    padding: 3px 0 0 0;
+}
+
+.content {
+    padding-top: 240px; /* 상단 고정 요소의 높이만큼 여백 추가 */
+}
+
+.floating-box {
+    background-color: #f8e5db;
+    position: fixed;
+    bottom: 50px;
+    right: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+    opacity: 0.9;
+}
+
+.hidden {
+    display: none;
 }
 </style>
 
@@ -26,6 +128,7 @@
 <script>
 //----------------------- 입력 규칙 -----------------------//
 const ri_rule = {
+    caution: "<h3>주의사항</h3>입력 주의사항이나 코드표 관련<br>남자는 1로 입력, 여자는 2로 입력",
     head: ["id","1","2","3","3-1","3-2","4","5","6","7","8"],
     rule: [{},{},{},{}]
 };
@@ -40,40 +143,143 @@ const ri_main = {
         return buf;    
     },
 
+    fixedForm : function() {
+        var divHeight = $(".top-fixed").height() + 21;
+        $(".content").css({
+            "padding-top" : divHeight + "px"
+        });
+
+        $(".tbl-result th").css({
+            "top" : divHeight + "px"
+        });
+    },
+
+    initFormTableHead : function() {
+        // 입력 폼 테이블 thead 설정
+        var newRow = $("<tr>");
+        ri_rule.head.forEach(e => {
+            newRow.append($("<th>").text(e));
+        });
+        $(".tbl-input thead").append(newRow);
+    },
+
+    initFormTableBody : function() {
+        // 입력 폼 테이블 tbody 설정
+        var newRow = $("<tr>");
+        ri_rule.head.forEach(e => {
+            newRow.append($("<td>").append($("<input>", {type: "text", class: "input-box"})));
+        });
+        $(".tbl-input tbody").append(newRow);
+    },
+
+    initResultTable : function() {
+        // 입력 결과 테이블 설정
+        var newRow = $("<tr>");
+        newRow.append($("<th>").text("구분"));
+        ri_rule.head.forEach(e => {
+            newRow.append($("<th>").text(e));
+        });
+        $(".tbl-result thead").append(newRow);
+    },
+
+    initBox : function() {
+        // 주의 상자 설정
+        if (ri_rule.caution && ri_rule.caution.length > 0) {
+            $("#caution").append(ri_rule.caution).removeClass("hidden");
+        }
+    },
+
+    clearForm : function() {
+        $(".tbl-input tr input[type='text'], .input-form-box").val("");
+    },
+
+    inputTable : function(data) {
+        // 첫번째는 삭제 버튼
+        var newRow = $("<tr>");                
+        newRow.append($("<td>").append($("<a>").addClass("delete-link").addClass("button").attr("href", "#").text("삭제")));
+
+        for(var i = 0; i < ri_rule.head.length; i++) {
+            if (i < data.length) {
+                newRow.append($("<td>").text(data[i].trim()));
+            } else {
+                newRow.append($("<td>").text(""));
+            }
+        }
+
+        var lastRow = $(".tbl-result tbody tr:last");
+        if (lastRow.length) {
+            lastRow.after(newRow);
+        } else {
+            // 테이블에 행이 없는 경우, tbody 내부에 직접 추가합니다.
+            $(".tbl-result tbody").append(newRow);
+        }
+
+        // 현재 행 삭제 이벤트 추가
+        $(".delete-link").on("click", function(e) {        
+            e.preventDefault();
+            $(this).closest("tr").remove();
+        });
+    },
+
+    scrollToEnd : function() {
+        // 입력한 결과 확인을 위해 끝으로
+        var windowHeight = $(window).height();
+        var scrollHeight = $("body").height() - windowHeight;
+        window.scrollTo({
+            top: scrollHeight,
+            behavior: "smooth"
+        });
+    },
+
+    triggerInputTable : function(values) {
+        ri_main.inputTable(values);
+
+        if ($("#autoInit").prop("checked")) {
+            ri_main.clearForm();
+        }
+
+        ri_main.scrollToEnd();
+    },
+
+    validateInputValue : function(values) {
+        if (!values) {
+            return false;
+        }
+
+        if (values.length == 0) {
+            return false;
+        }
+
+        var isEmpty = true;
+        for (let i = 0; isEmpty && i < values.length; i++) {
+            if (values[i].length > 0) {
+                isEmpty = false;
+            }
+        }
+
+        if (isEmpty) {
+            return false;
+        }
+
+        return true;
+    },
+
     eventHandler : {
         onClickInput : function() {
-            
-            // 입력값 체크
-            var newRow = $("<tr>");
-            
-            // 첫번째는 삭제 버튼
-            newRow.append($("<td>").append($("<a>").addClass("delete-link").attr("href", "#").text("삭제")));
-
-            var inputData = $("#result").val().split(",");
-            for(var i = 0; i < ri_rule.head.length; i++) {
-                if (i < inputData.length) {
-                    newRow.append($("<td>").text(inputData[i]));
-                } else {
-                    newRow.append($("<td>").text(""));
-                }
+            var value = $("#result").val();
+            if (value == 0) {
+                return;
             }
 
-            var lastRow = $("#sheet1 tbody tr:last");
-            if (lastRow.length) {
-                lastRow.after(newRow);
-            } else {
-                // 테이블에 행이 없는 경우, tbody 내부에 직접 추가합니다.
-                $("#sheet1 tbody").append(newRow);
+            var separator = $("#separator").val();            
+            var values = value.split(separator);
+            if (!ri_main.validateInputValue(values)) {
+                return;
             }
 
-            // 현재 행 삭제 이벤트 추가
-            $(".delete-link").on("click", function(e) {        
-                e.preventDefault();
-                $(this).closest("tr").remove();
-            });
+            ri_main.triggerInputTable(values);            
         },
-        onClickExcel : function() {
-            
+        onClickDownload : function() {            
             var workbook = XLSX.utils.book_new();
             var worksheet = XLSX.utils.table_to_sheet(document.getElementById('sheet1'));
 
@@ -82,6 +288,62 @@ const ri_main = {
             XLSX.utils.book_append_sheet(workbook, worksheet, "sheet1");
             var workbookFile = XLSX.write(workbook, {bookType:'xlsx',  type: 'binary'});
             saveAs(new Blob([ri_main.s2ab(workbookFile)],{type:"application/octet-stream"}), "research_result.xlsx");
+        },
+        onClickUpload : function() {
+            const fileInput = document.getElementById('excelUpload');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const data = event.target.result;
+                const workbook = XLSX.read(data, { type: 'binary' });
+                const sheetName = workbook.SheetNames[0];
+                const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+                // 테이블 초기화 후 진행되므로 경고
+                if (!confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
+                    return;
+                }
+
+                $(".tbl-result tbody").empty();
+                sheetData.forEach(function(row){
+                    var cols = [];
+                    ri_rule.head.forEach(e => {
+                        // 해당 값이 있는지 체크 후 처리
+                        if (row.hasOwnProperty(e)) {
+                            cols.push(row[e]);
+                        } else {
+                            cols.push("");
+                        }                                
+                    });
+                    ri_main.triggerInputTable(cols);
+                });
+            };
+            reader.readAsBinaryString(file);
+        },
+        onClickFormInput : function() {
+            $(".tbl-input tbody tr").each(function() {
+                var rowInputs = $(this).find("input[type='text']");
+                var rowData = rowInputs.map(function() {
+                    return $(this).val();
+                }).get();
+
+                if (!ri_main.validateInputValue(rowData)) {
+                    return;
+                }
+
+                ri_main.triggerInputTable(rowData);
+            });            
+        },
+        onClickFormInit : function() {
+            if (!confirm("입력된 내용을 모두 초기화 하시겠습니까?")) {
+                return;
+            }
+            ri_main.clearForm();
         }
     }
 };
@@ -89,38 +351,61 @@ const ri_main = {
 
 </head>
 <body>
-    <fieldset>
-        <legend>리서치 입력</legend>
-        입력 제한 규칙: <input type="text" id="rule" name="rule" disabled><br>
-        <input type="text" id="result" name="result">&nbsp;<a href="javascript:ri_main.eventHandler.onClickInput();">입력</a><br>
-        <input type="text" id="illegal" name="illegal" disabled>
-    </fieldset>
-    <div>
-        <!-- 엑셀 출력 -->
-        <a href="javascript:ri_main.eventHandler.onClickExcel();">Excel</a>
-
+    <div class="top-fixed no-wrap">
+        <div>
+            <a href="javascript:ri_main.eventHandler.onClickDownload();" class="button">다운로드</a>
+            <input type="file" id="excelUpload" accept=".xlsx">
+            <a href="javascript:ri_main.eventHandler.onClickUpload();" class="button">업로드</a>
+        </div>        
+        <div>
+            <label for="separator">구분자:</label>
+            <select id="separator">
+                <option value=" " selected>(공백)</option>
+                <option value=",">,</option>
+                <option value="/">/</option>
+            </select>
+            <input type="text" id="result" class="input-form-box">&nbsp;<a href="javascript:ri_main.eventHandler.onClickInput();" class="button">입력</a><br>
+            <input type="text" id="illegal" class="input-form-box" disabled>
+        </div>
+        <div class="overflow">
+            <table class="tbl-input">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div>            
+            <a href="javascript:ri_main.eventHandler.onClickFormInput();" class="button">입력</a>&nbsp;&nbsp;
+            <a href="javascript:ri_main.eventHandler.onClickFormInit();" class="button">초기화</a>&nbsp;&nbsp;
+            <label><input type="checkbox" id="autoInit" checked>입력 후 자동 초기화</label>
+        </div>
+    </div>    
+    <div class="content no-wrap">
         <!-- 입력 결과 출력 (삭제 기능) -->
-        <table id="sheet1" class="tbl_result">
+        <table id="sheet1" class="tbl-result">
             <thead></thead>
             <tbody></tbody>        
         </table>
     </div>
     
+    <div id="caution" class="floating-box hidden"></div>    
 <script>
 $(document).ready(function(){
-
     if ($.isEmptyObject(ri_rule)) {
         alert("입력 규칙 설정 후 사용 가능합니다.");
         $("#result, #put, #excel").attr("disabled", true);
         return;
-    }
+    }    
 
-    var newRow = $("<tr>");
-    newRow.append($("<th>").text("구분"));
-    ri_rule.head.forEach(e => {
-        newRow.append($("<th>").text(e));
-    });
-    $("#sheet1 thead").empty().append(newRow);
+    ri_main.initFormTableHead();
+    ri_main.initFormTableBody();
+    ri_main.initResultTable();
+    ri_main.initBox();
+
+    ri_main.fixedForm();
+});
+
+$(window).resize(function() {
+    ri_main.fixedForm();
 });
 </script>
 </body>
