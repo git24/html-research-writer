@@ -393,6 +393,17 @@ const ri_main = {
         return values;
     },
 
+    getNowDateTimeString : () => {
+        const currentDateTime = new Date();
+        const year = currentDateTime.getFullYear();
+        const month = (currentDateTime.getMonth() + 1).toString().padStart(2, '0');
+        const day = currentDateTime.getDate().toString().padStart(2, '0');
+        const hours = currentDateTime.getHours().toString().padStart(2, '0');
+        const minutes = currentDateTime.getMinutes().toString().padStart(2, '0');
+        const str = `${year}${month}${day}_${hours}${minutes}`;
+        return str;
+    },
+
     eventHandler : {
         onClickInput : () => {           
             const values = ri_main.getSeparatorValues();
@@ -420,7 +431,7 @@ const ri_main = {
 
             XLSX.utils.book_append_sheet(workbook, worksheet, "sheet1");
             const workbookFile = XLSX.write(workbook, {bookType:'xlsx',  type: 'binary'});
-            saveAs(new Blob([ri_main.s2ab(workbookFile)],{type:"application/octet-stream"}), "research_result.xlsx");
+            saveAs(new Blob([ri_main.s2ab(workbookFile)],{type:"application/octet-stream"}), "research_"+ ri_main.getNowDateTimeString() +".xlsx");
         },
 
         onClickUpload : () => {
