@@ -261,6 +261,30 @@ const ri_main = {
             }
         }
 
+        // 클릭 이벤트 추가
+        newRow.click(function() {
+            // 입력된 내용이 없어야만 진행
+            if (!ri_main.isAllInputEmpty()) {
+                return;
+            }
+
+            // 클릭된 로우 값 가져오기
+            const values = [];
+            $(this).find("td").map(function(index) {
+                // 삭제, 검증 컬럼 제외
+                if (index > 1) {
+                    values.push(String($(this).text()).trim());
+                }
+            });
+
+            $("#separatorBox").val(values.join($("#separator").val()));
+            $(".input-box").map(function(index) {
+                if (index < values.length) {
+                    $(this).val(values[index]);
+                }
+            });
+        });
+
         const lastRow = $(".tbl-result tbody tr:last");
         if (lastRow.length) {
             lastRow.after(newRow);
@@ -320,6 +344,12 @@ const ri_main = {
         return true;
     },
 
+    isAllInputEmpty: () => {
+        let separator = $("#separatorBox").val().trim();
+        let inputBoxs = ri_main.getEditorValues().join("");
+        return separator.length == 0 && inputBoxs.length == 0;
+    },
+
     getTableData : () => {
         const theadData = [];
         $("#sheet1 thead th").each(function() {
@@ -346,19 +376,19 @@ const ri_main = {
     },
 
     getSeparatorValues : () => {
-        const value = $("#result").val();
+        const value = $("#separatorBox").val();
         if (value.length == 0) {
             return [];
         }
 
-        const separator = $("#separator").val();            
+        const separator = $("#separator").val();
         return value.split(separator);
     },
 
     getEditorValues : () => {
         const values = [];
         $(".input-box").each(function() {
-            values.push(String($(this)).trim());
+            values.push(String($(this).val()).trim());
         });
         return values;
     },
@@ -421,9 +451,12 @@ const ri_main = {
                 for (let row = range.s.r + 1; row <= range.e.r; row++) {
                     const values = [];
                     for (let col = range.s.c; col <= range.e.c; col++) {
-                        const cellAddress = XLSX.utils.encode_cell({r: row, c: col});
-                        const cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : undefined;
-                        values.push(cellValue);
+                        // 검증 컬럼 제외
+                        if (col > 0) {
+                            const cellAddress = XLSX.utils.encode_cell({r: row, c: col});
+                            const cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : undefined;
+                            values.push(cellValue);
+                        }
                     }
                     ri_main.triggerInputTable(values, true);
                 }
@@ -433,7 +466,7 @@ const ri_main = {
 
         onClickFormInput : () => {
             const values = ri_main.getEditorValues();
-            if (!ri_main.isEmptyValue(rowData)) {
+            if (!ri_main.isEmptyValue(values)) {
                 ri_main.triggerInputTable(values);
             }            
         },
@@ -463,7 +496,7 @@ const ri_main = {
                 <option value=",">,</option>
                 <option value="/">/</option>
             </select>
-            <input type="text" id="result" class="input-form-box">&nbsp;<a href="javascript:ri_main.eventHandler.onClickInput();" class="button">입력</a><br>
+            <input type="text" id="separatorBox" class="input-form-box">&nbsp;<a href="javascript:ri_main.eventHandler.onClickInput();" class="button">입력</a><br>
             <label>검증결과: <input type="text" id="illegal" class="input-form-box illegal" disabled></label>
         </div>
         <div class="overflow">
@@ -491,7 +524,7 @@ const ri_main = {
 $(document).ready(() => {
     if ($.isEmptyObject(ri_rule)) {
         alert("입력 규칙 설정 후 사용 가능합니다.");
-        $("#result, #put, #excel").attr("disabled", true);
+        $("#separatorBox, .input-box").attr("disabled", true);
         return;
     }    
 
