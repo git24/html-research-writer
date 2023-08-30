@@ -177,7 +177,7 @@ const ri_main = {
         return buf;    
     },
 
-    fixedForm : function() {
+    fixedForm : () => {
         const divHeight = $(".top-fixed").height() + 21;
         $(".content").css({
             "padding-top" : divHeight + "px"
@@ -188,7 +188,7 @@ const ri_main = {
         });
     },
 
-    initFormTableHead : function() {
+    initFormTableHead : () => {
         // 입력 폼 테이블 thead 설정
         const newRow = $("<tr>");
         ri_rule.cols.forEach(e => {
@@ -197,7 +197,7 @@ const ri_main = {
         $(".tbl-input thead").append(newRow);
     },
 
-    initFormTableBody : function() {
+    initFormTableBody : () => {
         // 입력 폼 테이블 tbody 설정
         const newRow = $("<tr>");
         ri_rule.cols.forEach(e => {
@@ -206,7 +206,7 @@ const ri_main = {
         $(".tbl-input tbody").append(newRow);
     },
 
-    initResultTable : function() {
+    initResultTable : () => {
         // 입력 결과 테이블 설정
         const newRow = $("<tr>");
         newRow.append($("<th>").text("구분"));
@@ -217,22 +217,22 @@ const ri_main = {
         $(".tbl-result thead").append(newRow);
     },
 
-    initBox : function() {
+    initBox : () => {
         // 주의 상자 설정
         if (ri_rule.caution && ri_rule.caution.length > 0) {
             $("#caution").append(ri_rule.caution).removeClass("hidden");
         }
     },
 
-    clearForm : function() {
+    clearForm : () => {
         $(".tbl-input tr input, .input-form-box").val("");
     },
 
-    invalidRule : function(data) {
+    invalidRule : data => {
         // TODO: 룰 검증
     },
 
-    inputTable : function(data, upload) {
+    inputTable : (data, upload) => {
         // 첫번째는 삭제 버튼
         const newRow = $("<tr>");                
         newRow.append($("<td>").append($("<a>").addClass("delete-link").addClass("button").attr("href", "#").text("삭제")));
@@ -269,13 +269,13 @@ const ri_main = {
         }
 
         // 현재 행 삭제 이벤트 추가
-        $(".delete-link").on("click", function(e) {        
+        $(".delete-link").on("click", e => {        
             e.preventDefault();
             $(this).closest("tr").remove();
         });
     },
 
-    scrollToEnd : function() {
+    scrollToEnd : () => {
         // 입력한 결과 확인을 위해 끝으로
         const windowHeight = $(window).height();
         const scrollHeight = $("body").height() - windowHeight;
@@ -285,7 +285,7 @@ const ri_main = {
         });
     },
 
-    triggerInputTable : function(values, upload) {
+    triggerInputTable : (values, upload) => {
         if (!values || values.length == 0) {
             return;
         }
@@ -301,7 +301,7 @@ const ri_main = {
         }        
     },
 
-    isEmptyValue : function(values) {
+    isEmptyValue : values => {
         if (!values) {
             return false;
         }
@@ -319,9 +319,9 @@ const ri_main = {
         return false;
     },
 
-    getTableData : function() {
+    getTableData : () => {
         const theadData = [];
-        $("#sheet1 thead th").each(function() {
+        $("#sheet1 thead th").each(() => {
             const data = String($(this).text());
             if ("구분" !== data) {
                 theadData.push(data);
@@ -329,9 +329,9 @@ const ri_main = {
         });
 
         const tbodyData = [];
-        $("#sheet1 tbody tr").each(function() {
+        $("#sheet1 tbody tr").each(() => {
             const rowData = [];
-            $(this).find("td").each(function() {
+            $(this).find("td").each(() => {
                 const data = String($(this).text());
                 if ("삭제" !== data) {
                     rowData.push(data);
@@ -344,7 +344,7 @@ const ri_main = {
         return tbodyData;
     },
 
-    getSeparatorValues : function() {
+    getSeparatorValues : () => {
         const value = $("#result").val();
         if (value.length == 0) {
             return [];
@@ -354,13 +354,11 @@ const ri_main = {
         return value.split(separator);
     },
 
-    getEditorValues : function() {
+    getEditorValues : () => {
         const values = [];
-        $(".tbl-input tbody tr").each(function() {
+        $(".tbl-input tbody tr").each(() => {
             const rowInputs = $(this).find("input");
-            const rowData = rowInputs.map(function() {
-                return String($(this).val()).trim();
-            }).get();
+            const rowData = rowInputs.map(() => String($(this).val()).trim()).get();
 
             if (!ri_main.isEmptyValue(rowData)) {
                 return;
@@ -376,7 +374,7 @@ const ri_main = {
     },
 
     eventHandler : {
-        onClickInput : function() {           
+        onClickInput : () => {           
             const values = ri_main.getSeparatorValues();
             if (!ri_main.isEmptyValue(values)) {
                 return;
@@ -385,7 +383,7 @@ const ri_main = {
             ri_main.triggerInputTable(values);            
         },
 
-        onClickDownload : function() {
+        onClickDownload : () => {
             const tableData = ri_main.getTableData();
             if (tableData.length < 1) {
                 alert("저장할 내용이 없습니다.");
@@ -407,7 +405,7 @@ const ri_main = {
             saveAs(new Blob([ri_main.s2ab(workbookFile)],{type:"application/octet-stream"}), "research_result.xlsx");
         },
 
-        onClickUpload : function() {
+        onClickUpload : () => {
             // 테이블 초기화 후 진행되므로 경고
             if (!confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
                 return;
@@ -423,34 +421,34 @@ const ri_main = {
             $(".tbl-result tbody").empty();
 
             const reader = new FileReader();
-            reader.onload = function (event) {
-                const data = event.target.result;
-                const workbook = XLSX.read(data, { type: 'binary' });
-                const sheetName = workbook.SheetNames[0];
-                const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-                
-                sheetData.forEach(function(row){
+            reader.onload = e => {
+                const data = e.target.result;
+                const workbook = XLSX.read(data, {type: 'binary'});
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+                // 시트 내의 셀 범위 계산 (A1 형식)
+                const range = XLSX.utils.decode_range(worksheet['!ref']);                
+
+                // 각 셀을 순회하며 데이터 추출
+                for (let row = range.s.r + 1; row <= range.e.r; row++) {
                     const values = [];
-                    ri_rule.cols.forEach(e => {
-                        // 해당 값이 있는지 체크 후 처리
-                        if (row.hasOwnProperty(e.name)) {
-                            values.push(row[e.name]);
-                        } else {
-                            values.push("");
-                        }                                
-                    });
+                    for (let col = range.s.c; col <= range.e.c; col++) {
+                        const cellAddress = XLSX.utils.encode_cell({r: row, c: col});
+                        const cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : undefined;
+                        values.push(cellValue);
+                    }
                     ri_main.triggerInputTable(values, true);
-                });
+                }
             };
             reader.readAsBinaryString(file);
         },
 
-        onClickFormInput : function() {
+        onClickFormInput : () => {
             const values = ri_main.getEditorValues();
             ri_main.triggerInputTable(values);
         },
 
-        onClickFormInit : function() {
+        onClickFormInit : () => {
             if (!confirm("입력된 내용을 모두 초기화 하시겠습니까?")) {
                 return;
             }
@@ -500,7 +498,7 @@ const ri_main = {
     
     <div id="caution" class="floating-box hidden"></div>    
 <script>
-$(document).ready(function(){
+$(document).ready(() => {
     if ($.isEmptyObject(ri_rule)) {
         alert("입력 규칙 설정 후 사용 가능합니다.");
         $("#result, #put, #excel").attr("disabled", true);
@@ -515,7 +513,7 @@ $(document).ready(function(){
     ri_main.fixedForm();
 });
 
-$(window).resize(function() {
+$(window).resize(() => {
     ri_main.fixedForm();
 });
 </script>
