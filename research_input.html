@@ -60,7 +60,6 @@ input[type="file"] {
     font-size: 14px;
 }
 
-/* 호버(마우스 올릴 때) 스타일 */
 .button:hover {
     background-color: #0056b3;
 }
@@ -92,6 +91,11 @@ input[type="file"] {
 
 .tbl-input tbody td {
     background-color: #fdfdfd;
+}
+
+.tbl-illegal-col {
+    border: 2px solid #ff6060;
+    background-color: #fcc0c0;
 }
 
 .input-box {
@@ -150,7 +154,7 @@ input[type="file"] {
 </style>
 
 
-<script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 
@@ -250,16 +254,6 @@ const ri_main = {
         return msgs;
     },
 
-    findRuleIndex : (name) => {
-        for (let i = 0; i < ri_rule.cols.length; i++) {
-            if (ri_rule.cols[i].name == name) {
-                return i;
-            }
-        }
-        ri_rule.cols
-        return;
-    },
-
     initFormTableHead : () => {
         // 입력 폼 테이블 thead 설정
         const newRow = $("<tr>");
@@ -308,10 +302,35 @@ const ri_main = {
 
     clearForm : () => {
         $(".tbl-input tr input, .input-form-box").val("");
+        $(".tbl-input thead tr").each(function() {
+            $(this).find("th").removeClass("tbl-illegal-col");
+        });
+        $(".tbl-input tbody tr").each(function() {
+            $(this).find("td").removeClass("tbl-illegal-col");
+        });
     },
 
-    invalidRule : (value, ruleIdx) => {
+    invalidRule : (values) => {
         // TODO: 룰 검증
+        for (let i = 0; i < ri_rule.cols.length; i++) {
+            const rules = ri_rule.cols[i].rules;
+            if (rules && rules.length > 0) {
+
+            }
+        }
+        
+        // 틀린 열 표시
+        const targetIdx = 10;
+
+        $(".tbl-input thead tr").each(function() {
+            $(this).find("th:eq("+ targetIdx +")").addClass("tbl-illegal-col");
+        });
+
+        $(".tbl-input tbody tr").each(function() {
+            $(this).find("td:eq("+ targetIdx +")").addClass("tbl-illegal-col");
+        });
+
+        ri_main.scrollToFormTableColum(targetIdx);
     },
 
     appendResultTableRow : (values, upload) => {
@@ -392,6 +411,16 @@ const ri_main = {
             top: scrollHeight,
             behavior: "smooth"
         });
+    },
+
+    scrollToFormTableColum : (targetIdx) => {
+        const targetColumn = $(".tbl-input thead th:nth-child(" + (targetIdx + 1) + ")");
+        const container = $(".overflow");
+        const targetScrollLeft = targetColumn.position().left + container.scrollLeft();
+
+        container.animate({
+            scrollLeft: targetScrollLeft
+        }, 500);
     },
 
     triggerAppendTableRow : (values, upload) => {
@@ -591,7 +620,7 @@ const ri_main = {
                 <option value=",">,</option>
                 <option value="/">/</option>
             </select>
-            <input type="text" id="separatorBox" class="input-form-box">&nbsp;<a href="javascript:ri_main.eventHandler.onClickInput();" class="button">입력</a><br>
+            <input type="text" id="separatorBox" class="input-form-box">&nbsp;<a href="javascript:ri_main.eventHandler.onClickInput();" class="button">간편입력</a><br>
             <label>검증결과: <input type="text" id="illegal" class="input-form-box illegal" disabled></label>
         </div>
         <div class="overflow">
