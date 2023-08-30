@@ -124,6 +124,7 @@ input[type="file"] {
 
 .illegal {
     width: 302px;    
+    color: black;
     border: 2px solid rgb(255, 159, 159);
 }
 
@@ -146,10 +147,10 @@ const ri_rule = {
         {name: "id"},
         {name: "1"},
         {name: "2"},
-        {name: "3", rule: [{equal: "3", to: "5"}, {unequal: "3", to: "4"}]},
-        {name: "3-1", rule: [{equal: "3", to: "5"}, {unequal: "3", empty: "3-2"}]},
+        {name: "3", rule: [{value: "3", test: "=", to: "5", empty: "4"}, {value: "3", test: "!", to: "4", empty: "5"}]},
+        {name: "3-1", rule: [{value: "3", test: "=", to: "5"}, {value: "3", test: "!", empty: "3-2"}]},
         {name: "3-2"},
-        {name: "4", rule: [{equal: "30", to: "8"}, {greater: "30", to: "8"}, {less: "30", to: "7"}]},
+        {name: "4", rule: [{value: "30", test: ">=", to: "8", empty: "7"}, {value: "30", test: "<", to: "7", empty: "8"}]},
         {name: "5"},
         {name: "6"},
         {name: "7"},
@@ -168,14 +169,16 @@ const ri_rule = {
 const ri_main = {
     s2ab(s) { 
         // ref : https://redstapler.co/sheetjs-tutorial-create-xlsx/
-        var buf = new ArrayBuffer(s.length); //convert s to arrayBuffer
-        var view = new Uint8Array(buf);  //create uint8array as viewer
-        for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF; //convert to octet
+        const buf = new ArrayBuffer(s.length);
+        let view = new Uint8Array(buf);
+        for (let i = 0; i < s.length; i++) {
+            view[i] = s.charCodeAt(i) & 0xFF;
+        }
         return buf;    
     },
 
     fixedForm : function() {
-        var divHeight = $(".top-fixed").height() + 21;
+        const divHeight = $(".top-fixed").height() + 21;
         $(".content").css({
             "padding-top" : divHeight + "px"
         });
@@ -187,7 +190,7 @@ const ri_main = {
 
     initFormTableHead : function() {
         // 입력 폼 테이블 thead 설정
-        var newRow = $("<tr>");
+        const newRow = $("<tr>");
         ri_rule.cols.forEach(e => {
             newRow.append($("<th>").text(e.name));
         });
@@ -196,7 +199,7 @@ const ri_main = {
 
     initFormTableBody : function() {
         // 입력 폼 테이블 tbody 설정
-        var newRow = $("<tr>");
+        const newRow = $("<tr>");
         ri_rule.cols.forEach(e => {
             newRow.append($("<td>").append($("<input>", {type: "number", class: "input-box"})));
         });
@@ -205,9 +208,9 @@ const ri_main = {
 
     initResultTable : function() {
         // 입력 결과 테이블 설정
-        var newRow = $("<tr>");
+        const newRow = $("<tr>");
         newRow.append($("<th>").text("구분"));
-            newRow.append($("<th>").text("검증"));
+        newRow.append($("<th>").text("검증"));
         ri_rule.cols.forEach(e => {
             newRow.append($("<th>").text(e.name));
         });
@@ -231,10 +234,10 @@ const ri_main = {
 
     inputTable : function(data, upload) {
         // 첫번째는 삭제 버튼
-        var newRow = $("<tr>");                
+        const newRow = $("<tr>");                
         newRow.append($("<td>").append($("<a>").addClass("delete-link").addClass("button").attr("href", "#").text("삭제")));
 
-        var msg = ri_main.invalidRule(data);
+        const msg = ri_main.invalidRule(data);
         if (msg) {
             // 업로드가 아니면 한줄 추가이므로 메시지 처리
             if (!upload) {
@@ -246,7 +249,7 @@ const ri_main = {
             newRow.append($("<td>").append("TRUE"));
         }        
 
-        for(var i = 0; i < ri_rule.cols.length; i++) {
+        for(let i = 0; i < ri_rule.cols.length; i++) {
             if (i < data.length) {
                 if (typeof data[i] === "string") {
                     data[i] = data[i].trim()
@@ -257,7 +260,7 @@ const ri_main = {
             }
         }
 
-        var lastRow = $(".tbl-result tbody tr:last");
+        const lastRow = $(".tbl-result tbody tr:last");
         if (lastRow.length) {
             lastRow.after(newRow);
         } else {
@@ -274,8 +277,8 @@ const ri_main = {
 
     scrollToEnd : function() {
         // 입력한 결과 확인을 위해 끝으로
-        var windowHeight = $(window).height();
-        var scrollHeight = $("body").height() - windowHeight;
+        const windowHeight = $(window).height();
+        const scrollHeight = $("body").height() - windowHeight;
         window.scrollTo({
             top: scrollHeight,
             behavior: "smooth"
@@ -283,6 +286,10 @@ const ri_main = {
     },
 
     triggerInputTable : function(values, upload) {
+        if (!values || values.length == 0) {
+            return;
+        }
+
         ri_main.inputTable(values, upload);
 
         if ($("#autoInit").prop("checked")) {
@@ -313,19 +320,19 @@ const ri_main = {
     },
 
     getTableData : function() {
-        var theadData = [];
+        const theadData = [];
         $("#sheet1 thead th").each(function() {
-            var data = String($(this).text());
+            const data = String($(this).text());
             if ("구분" !== data) {
                 theadData.push(data);
             }
         });
 
-        var tbodyData = [];
+        const tbodyData = [];
         $("#sheet1 tbody tr").each(function() {
-            var rowData = [];
+            const rowData = [];
             $(this).find("td").each(function() {
-                var data = String($(this).text());
+                const data = String($(this).text());
                 if ("삭제" !== data) {
                     rowData.push(data);
                 }
@@ -334,37 +341,61 @@ const ri_main = {
         });
 
         tbodyData.unshift(theadData)
-
         return tbodyData;
     },
 
-    eventHandler : {
-        onClickInput : function() {
-            var value = $("#result").val();
-            if (value == 0) {
+    getSeparatorValues : function() {
+        const value = $("#result").val();
+        if (value.length == 0) {
+            return [];
+        }
+
+        const separator = $("#separator").val();            
+        return value.split(separator);
+    },
+
+    getEditorValues : function() {
+        const values = [];
+        $(".tbl-input tbody tr").each(function() {
+            const rowInputs = $(this).find("input");
+            const rowData = rowInputs.map(function() {
+                return String($(this).val()).trim();
+            }).get();
+
+            if (!ri_main.isEmptyValue(rowData)) {
                 return;
             }
+            
+            values.push(rowData);
+        });
 
-            var separator = $("#separator").val();            
-            var values = value.split(separator);
+        if (values.length == 1) {
+            return values[0];
+        }
+        return [];
+    },
+
+    eventHandler : {
+        onClickInput : function() {           
+            const values = ri_main.getSeparatorValues();
             if (!ri_main.isEmptyValue(values)) {
                 return;
             }
 
             ri_main.triggerInputTable(values);            
         },
-        onClickDownload : function() {
-            var tableData = ri_main.getTableData();
 
+        onClickDownload : function() {
+            const tableData = ri_main.getTableData();
             if (tableData.length < 1) {
                 alert("저장할 내용이 없습니다.");
                 return;
             }
 
-            var workbook = XLSX.utils.book_new();
-            var worksheet = XLSX.utils.aoa_to_sheet(tableData);
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.aoa_to_sheet(tableData);
 
-            for (var key in worksheet) {
+            for (let key in worksheet) {
                 if (worksheet.hasOwnProperty(key) && worksheet[key].t === "n") {
                     worksheet[key].t = "s";
                     worksheet[key].v = String(worksheet[key].v);
@@ -372,9 +403,10 @@ const ri_main = {
             }
 
             XLSX.utils.book_append_sheet(workbook, worksheet, "sheet1");
-            var workbookFile = XLSX.write(workbook, {bookType:'xlsx',  type: 'binary'});
+            const workbookFile = XLSX.write(workbook, {bookType:'xlsx',  type: 'binary'});
             saveAs(new Blob([ri_main.s2ab(workbookFile)],{type:"application/octet-stream"}), "research_result.xlsx");
         },
+
         onClickUpload : function() {
             // 테이블 초기화 후 진행되므로 경고
             if (!confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
@@ -398,7 +430,7 @@ const ri_main = {
                 const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                 
                 sheetData.forEach(function(row){
-                    var values = [];
+                    const values = [];
                     ri_rule.cols.forEach(e => {
                         // 해당 값이 있는지 체크 후 처리
                         if (row.hasOwnProperty(e.name)) {
@@ -412,20 +444,12 @@ const ri_main = {
             };
             reader.readAsBinaryString(file);
         },
+
         onClickFormInput : function() {
-            $(".tbl-input tbody tr").each(function() {
-                var rowInputs = $(this).find("input");
-                var rowData = rowInputs.map(function() {
-                    return $(this).val();
-                }).get();
-
-                if (!ri_main.isEmptyValue(rowData)) {
-                    return;
-                }
-
-                ri_main.triggerInputTable(rowData);
-            });            
+            const values = ri_main.getEditorValues();
+            ri_main.triggerInputTable(values);
         },
+
         onClickFormInit : function() {
             if (!confirm("입력된 내용을 모두 초기화 하시겠습니까?")) {
                 return;
