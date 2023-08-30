@@ -343,7 +343,7 @@ const ri_main = {
         for (let i = 0; i < ri_rule.cols.length; i++) {
             const rules = ri_rule.cols[i].rules;
             if (rules && rules.length > 0) {
-
+                // TODO: 룰 검증...
             }
         }
                 
@@ -365,7 +365,7 @@ const ri_main = {
         return illegalIdx;
     },
 
-    appendResultTableRow : (values, upload) => {
+    appendResultTableRow : (values, options) => {
         // 첫번째는 삭제 버튼
         const newRow = $("<tr>");                
         newRow.append($("<td>").append($("<a>").addClass("delete-link").addClass("button").attr("href", "#").text("삭제")));
@@ -374,11 +374,10 @@ const ri_main = {
         const illegalIdx = ri_main.findIllegalIndex(values);
         if (illegalIdx != -1) {
             // 업로드가 아니면 한줄 추가이므로 메시지 처리
-            if (!upload) {
+            if (!options || options.type != "upload") {
                 let msgs = ri_main.makeRuleMessages(ri_rule.cols[illegalIdx].rules);
                 $("#illegal").val(msgs.join(" | "));
             }
-            newRow.addClass("rule-invalid");
             newRow.append($("<td>").append("FALSE"));            
         } else {
             newRow.append($("<td>").append("TRUE"));
@@ -456,18 +455,18 @@ const ri_main = {
         }, 500);
     },
 
-    triggerAppendTableRow : (values, upload) => {
+    triggerAppendTableRow : (values, options) => {
         if (!values || values.length == 0) {
             return;
         }
 
-        ri_main.appendResultTableRow(values, upload);
+        ri_main.appendResultTableRow(values, options);
 
         if ($("#autoInit").prop("checked")) {
             ri_main.clearForm();
         }
 
-        if (!upload) {
+        if (options && options.type != "upload") {
             ri_main.scrollToEnd();
         }        
     },
@@ -553,9 +552,10 @@ const ri_main = {
     eventHandler : {
         onClickInput : () => {           
             const values = ri_main.getSeparatorValues();
-            if (!ri_main.isEmptyValue(values)) {
-                ri_main.triggerAppendTableRow(values);
+            if (ri_main.isEmptyValue(values)) {
+                return;
             }
+            ri_main.triggerAppendTableRow(values);
         },
 
         onClickDownload : () => {
@@ -615,7 +615,7 @@ const ri_main = {
                             values.push(cellValue);
                         }
                     }
-                    ri_main.triggerAppendTableRow(values, true);
+                    ri_main.triggerAppendTableRow(values, {type: "upload"});
                 }
             };
             reader.readAsBinaryString(file);
@@ -623,9 +623,10 @@ const ri_main = {
 
         onClickFormInput : () => {
             const values = ri_main.getFormTableValues();
-            if (!ri_main.isEmptyValue(values)) {
-                ri_main.triggerAppendTableRow(values);
-            }            
+            if (ri_main.isEmptyValue(values)) {
+                return;
+            }
+            ri_main.triggerAppendTableRow(values);         
         },
 
         onClickFormInit : () => {
