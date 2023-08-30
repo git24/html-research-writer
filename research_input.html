@@ -314,13 +314,13 @@ const ri_main = {
         // TODO: 룰 검증
     },
 
-    appendResultTableRow : (data, upload) => {
+    appendResultTableRow : (values, upload) => {
         // 첫번째는 삭제 버튼
         const newRow = $("<tr>");                
         newRow.append($("<td>").append($("<a>").addClass("delete-link").addClass("button").attr("href", "#").text("삭제")));
 
         // 룰 검증 처리
-        const msg = ri_main.invalidRule(data);
+        const msg = ri_main.invalidRule(values);
         if (msg) {
             // 업로드가 아니면 한줄 추가이므로 메시지 처리
             if (!upload) {
@@ -334,11 +334,11 @@ const ri_main = {
 
         // 입력 데이터 행 생성
         for(let i = 0; i < ri_rule.cols.length; i++) {
-            if (i < data.length) {
-                if (typeof data[i] === "string") {
-                    data[i] = data[i].trim()
+            if (i < values.length) {
+                if (typeof values[i] === "string") {
+                    values[i] = values[i].trim()
                 }
-                newRow.append($("<td>").text(data[i]));
+                newRow.append($("<td>").text(values[i]));
             } else {
                 newRow.append($("<td>"));
             }
@@ -352,18 +352,18 @@ const ri_main = {
             }
 
             // 클릭된 로우 값 가져오기
-            const values = [];
+            const tableRows = [];
             $(this).find("td").map(function(index) {
                 // 삭제, 검증 컬럼 제외
                 if (index > 1) {
-                    values.push(String($(this).text()).trim());
+                    tableRows.push(String($(this).text()).trim());
                 }
             });
 
-            $("#separatorBox").val(values.join($("#separator").val()));
+            $("#separatorBox").val(tableRows.join($("#separator").val()));
             $(".input-box").map(function(index) {
-                if (index < values.length) {
-                    $(this).val(values[index]);
+                if (index < tableRows.length) {
+                    $(this).val(tableRows[index]);
                 }
             });
         });
