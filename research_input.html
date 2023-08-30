@@ -86,6 +86,10 @@ input[type="file"] {
     background-color: #fcf9d2;
 }
 
+.tbl-head-message p {
+    margin: 0;
+}
+
 .tbl-input tbody td {
     background-color: #fdfdfd;
 }
@@ -154,20 +158,20 @@ input[type="file"] {
 <script>
 //----------------------- 입력 규칙 -----------------------//
 const ri_rule = {
-    caution: "<h3>주의사항</h3>입력 주의사항이나 코드표 관련<br>남자는 1로 입력, 여자는 2로 입력",
+    caution: "<h3>주의사항</h3>ex)<br>1이상 : 1을 포함한 큰 수<br>1이하 : 1을 포함한 작은 수<br>1초과 : 1을 제외한 큰 수<br>1미만 : 1을 제외한 작은 수<br><br>ex) 남자는 1로 입력, 여자는 2로 입력",
     cols: [
         {name: "id"},
         {name: "1"},
         {name: "2"},
-        {name: "3", rule: [{value: "3", test: "=", to: "5", empty: "4"}, {value: "3", test: "!", to: "4", empty: "5"}], msg: "3 이면 5번 필수, 4번 입력X<br>3 아니면 4번 필수, 5번 입력X"},
-        {name: "3-1", rule: [{value: "3", test: "=", to: "5"}, {value: "3", test: "!", empty: "3-2"}], msg: "3 이면 5번 필수<br>3 아니면 3-2번 입력X"},
+        {name: "3", rules: [{value: "3", test: "=", to: "5", empty: "4"}, {value: "3", test: "!", to: "4", empty: "5"}]},
+        {name: "3-1", rules: [{value: "3", test: "=", to: "6"}, {value: "3", test: "!", empty: "3-2"}]},
         {name: "3-2"},
-        {name: "4", rule: [{value: "30", test: ">=", to: "8", empty: "7"}, {value: "30", test: "<", to: "7", empty: "8"}], msg: "30 이상 8번 필수, 7번 입력X<br>30 미만 7번 필수, 8번 입력X"},
+        {name: "4", rules: [{value: "30", test: ">=", to: "8", empty: "7"}, {value: "30", test: "<", to: "7", empty: "8"}]},
         {name: "5"},
         {name: "6"},
         {name: "7"},
         {name: "8"},
-        {name: "9"},
+        {name: "9", rules: [{value: "2", test: "!", empty: "11"}]},
         {name: "9-1"},
         {name: "9-2"},
         {name: "9-3"},
@@ -200,13 +204,77 @@ const ri_main = {
         });
     },
 
+    makeRuleMessages : (rules) => {
+        if (!rules) {
+            return [];
+        }
+
+        const msgs = [];
+        for (let i = 0; i < rules.length; i++) {
+            let msg = String(rules[i].value);
+
+            switch (rules[i].test) {
+                case "=":
+                    msg += " 이면";
+                    break;
+                case "!":
+                    msg += " 아니면";
+                    break;
+                case ">":
+                    msg += " 초과";
+                    break;
+                case "<":
+                    msg += " 미만";
+                    break;
+                case ">=":
+                    msg += " 이상";
+                    break;
+                case "<=":
+                    msg += " 이하";
+                    break;
+            }
+
+            let attach = "";
+            if (rules[i].to) {
+                attach += " " + rules[i].to + "번 필수";
+            }
+
+            if (rules[i].empty) {
+                if (attach.length > 0) {
+                    attach += ","
+                }
+                attach += " " + rules[i].empty + "번 입력X";
+            }
+            msgs.push(msg + attach);
+        }
+        return msgs;
+    },
+
+    findRuleIndex : (name) => {
+        for (let i = 0; i < ri_rule.cols.length; i++) {
+            if (ri_rule.cols[i].name == name) {
+                return i;
+            }
+        }
+        ri_rule.cols
+        return;
+    },
+
     initFormTableHead : () => {
         // 입력 폼 테이블 thead 설정
         const newRow = $("<tr>");
         const newMsg = $("<tr>");
         ri_rule.cols.forEach(e => {
-            newRow.append($("<th>").text(e.name));
-            newMsg.append($("<th>").addClass("tbl-head-message").html(e.msg));
+            newRow.append($("<th>").append(e.name));
+
+            const headMsg = $("<th>").addClass("tbl-head-message");            
+            if (e.rules) {
+                let msgs = ri_main.makeRuleMessages(e.rules);
+                for (let i = 0; i < msgs.length; i++) {
+                    headMsg.append($("<p>").append(msgs[i]));
+                }
+            }
+            newMsg.append(headMsg);
         });
         $(".tbl-input thead").append(newRow).append(newMsg);
     },
@@ -231,7 +299,7 @@ const ri_main = {
         $(".tbl-result thead").append(newRow);
     },
 
-    initBox : () => {
+    initCautionBox : () => {
         // 주의 상자 설정
         if (ri_rule.caution && ri_rule.caution.length > 0) {
             $("#caution").append(ri_rule.caution).removeClass("hidden");
@@ -242,15 +310,16 @@ const ri_main = {
         $(".tbl-input tr input, .input-form-box").val("");
     },
 
-    invalidRule : data => {
+    invalidRule : (value, ruleIdx) => {
         // TODO: 룰 검증
     },
 
-    inputTable : (data, upload) => {
+    appendResultTableRow : (data, upload) => {
         // 첫번째는 삭제 버튼
         const newRow = $("<tr>");                
         newRow.append($("<td>").append($("<a>").addClass("delete-link").addClass("button").attr("href", "#").text("삭제")));
 
+        // 룰 검증 처리
         const msg = ri_main.invalidRule(data);
         if (msg) {
             // 업로드가 아니면 한줄 추가이므로 메시지 처리
@@ -263,6 +332,7 @@ const ri_main = {
             newRow.append($("<td>").append("TRUE"));
         }        
 
+        // 입력 데이터 행 생성
         for(let i = 0; i < ri_rule.cols.length; i++) {
             if (i < data.length) {
                 if (typeof data[i] === "string") {
@@ -274,10 +344,10 @@ const ri_main = {
             }
         }
 
-        // 클릭 이벤트 추가
+        // 행 클릭 이벤트 추가
         newRow.click(function() {
             // 입력된 내용이 없어야만 진행
-            if (!ri_main.isAllInputEmpty()) {
+            if (!ri_main.isFormEditorEmpty()) {
                 return;
             }
 
@@ -298,6 +368,7 @@ const ri_main = {
             });
         });
 
+        // 생성된 행 추가
         const lastRow = $(".tbl-result tbody tr:last");
         if (lastRow.length) {
             lastRow.after(newRow);
@@ -323,12 +394,12 @@ const ri_main = {
         });
     },
 
-    triggerInputTable : (values, upload) => {
+    triggerAppendTableRow : (values, upload) => {
         if (!values || values.length == 0) {
             return;
         }
 
-        ri_main.inputTable(values, upload);
+        ri_main.appendResultTableRow(values, upload);
 
         if ($("#autoInit").prop("checked")) {
             ri_main.clearForm();
@@ -357,35 +428,35 @@ const ri_main = {
         return true;
     },
 
-    isAllInputEmpty: () => {
+    isFormEditorEmpty: () => {
         let separator = $("#separatorBox").val().trim();
-        let inputBoxs = ri_main.getEditorValues().join("");
+        let inputBoxs = ri_main.getFormTableValues().join("");
         return separator.length == 0 && inputBoxs.length == 0;
     },
 
-    getTableData : () => {
-        const theadData = [];
+    getResultTableRows : () => {
+        const theadRows = [];
         $("#sheet1 thead th").each(function() {
-            const data = String($(this).text());
-            if ("구분" !== data) {
-                theadData.push(data);
+            const value = String($(this).text());
+            if ("구분" !== value) {
+                theadRows.push(value);
             }
         });
 
-        const tbodyData = [];
+        const tbodyRows = [];
         $("#sheet1 tbody tr").each(function() {
-            const rowData = [];
+            const row = [];
             $(this).find("td").each(function() {
                 const data = String($(this).text());
                 if ("삭제" !== data) {
-                    rowData.push(data);
+                    row.push(data);
                 }
             });
-            tbodyData.push(rowData);
+            tbodyRows.push(row);
         });
 
-        tbodyData.unshift(theadData)
-        return tbodyData;
+        tbodyRows.unshift(theadRows)
+        return tbodyRows;
     },
 
     getSeparatorValues : () => {
@@ -398,7 +469,7 @@ const ri_main = {
         return value.split(separator);
     },
 
-    getEditorValues : () => {
+    getFormTableValues : () => {
         const values = [];
         $(".input-box").each(function() {
             values.push(String($(this).val()).trim());
@@ -421,19 +492,19 @@ const ri_main = {
         onClickInput : () => {           
             const values = ri_main.getSeparatorValues();
             if (!ri_main.isEmptyValue(values)) {
-                ri_main.triggerInputTable(values);
+                ri_main.triggerAppendTableRow(values);
             }
         },
 
         onClickDownload : () => {
-            const tableData = ri_main.getTableData();
-            if (tableData.length < 1) {
+            const tableRows = ri_main.getResultTableRows();
+            if (tableRows.length < 1) {
                 alert("저장할 내용이 없습니다.");
                 return;
             }
 
             const workbook = XLSX.utils.book_new();
-            const worksheet = XLSX.utils.aoa_to_sheet(tableData);
+            const worksheet = XLSX.utils.aoa_to_sheet(tableRows);
 
             for (let key in worksheet) {
                 if (worksheet.hasOwnProperty(key) && worksheet[key].t === "n") {
@@ -482,16 +553,16 @@ const ri_main = {
                             values.push(cellValue);
                         }
                     }
-                    ri_main.triggerInputTable(values, true);
+                    ri_main.triggerAppendTableRow(values, true);
                 }
             };
             reader.readAsBinaryString(file);
         },
 
         onClickFormInput : () => {
-            const values = ri_main.getEditorValues();
+            const values = ri_main.getFormTableValues();
             if (!ri_main.isEmptyValue(values)) {
-                ri_main.triggerInputTable(values);
+                ri_main.triggerAppendTableRow(values);
             }            
         },
 
@@ -555,7 +626,7 @@ $(document).ready(() => {
     ri_main.initFormTableHead();
     ri_main.initFormTableBody();
     ri_main.initResultTable();
-    ri_main.initBox();
+    ri_main.initCautionBox();
 
     ri_main.fixedForm();
 });
