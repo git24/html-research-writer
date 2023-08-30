@@ -80,8 +80,18 @@ input[type="file"] {
     z-index: 1;
 }
 
+.tbl-head-message {
+    font-size: 12px;
+    font-weight: lighter;
+    background-color: #fcf9d2;
+}
+
+.tbl-input tbody td {
+    background-color: #fdfdfd;
+}
+
 .input-box {
-    width: 40px;
+    width: 60px;
 }
 
 .top-fixed {
@@ -127,6 +137,7 @@ input[type="file"] {
     width: 302px;    
     color: black;
     border: 2px solid rgb(255, 159, 159);
+    background-color: #ffffff;
 }
 
 .hidden {
@@ -148,10 +159,10 @@ const ri_rule = {
         {name: "id"},
         {name: "1"},
         {name: "2"},
-        {name: "3", rule: [{value: "3", test: "=", to: "5", empty: "4"}, {value: "3", test: "!", to: "4", empty: "5"}]},
-        {name: "3-1", rule: [{value: "3", test: "=", to: "5"}, {value: "3", test: "!", empty: "3-2"}]},
+        {name: "3", rule: [{value: "3", test: "=", to: "5", empty: "4"}, {value: "3", test: "!", to: "4", empty: "5"}], msg: "3 이면 5번 필수, 4번 입력X<br>3 아니면 4번 필수, 5번 입력X"},
+        {name: "3-1", rule: [{value: "3", test: "=", to: "5"}, {value: "3", test: "!", empty: "3-2"}], msg: "3 이면 5번 필수<br>3 아니면 3-2번 입력X"},
         {name: "3-2"},
-        {name: "4", rule: [{value: "30", test: ">=", to: "8", empty: "7"}, {value: "30", test: "<", to: "7", empty: "8"}]},
+        {name: "4", rule: [{value: "30", test: ">=", to: "8", empty: "7"}, {value: "30", test: "<", to: "7", empty: "8"}], msg: "30 이상 8번 필수, 7번 입력X<br>30 미만 7번 필수, 8번 입력X"},
         {name: "5"},
         {name: "6"},
         {name: "7"},
@@ -192,10 +203,12 @@ const ri_main = {
     initFormTableHead : () => {
         // 입력 폼 테이블 thead 설정
         const newRow = $("<tr>");
+        const newMsg = $("<tr>");
         ri_rule.cols.forEach(e => {
             newRow.append($("<th>").text(e.name));
+            newMsg.append($("<th>").addClass("tbl-head-message").html(e.msg));
         });
-        $(".tbl-input thead").append(newRow);
+        $(".tbl-input thead").append(newRow).append(newMsg);
     },
 
     initFormTableBody : () => {
