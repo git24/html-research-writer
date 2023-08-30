@@ -238,18 +238,17 @@ const ri_main = {
                     break;
             }
 
-            let attach = "";
             if (rules[i].to) {
-                attach += " " + rules[i].to + "번 필수";
+                msg += " " + rules[i].to + "번 필수";
             }
 
             if (rules[i].empty) {
-                if (attach.length > 0) {
-                    attach += ","
+                if (rules[i].to) {
+                    msg += ","
                 }
-                attach += " " + rules[i].empty + "번 입력X";
+                msg += " " + rules[i].empty + "번 입력X";
             }
-            msgs.push(msg + attach);
+            msgs.push(msg);
         }
         return msgs;
     },
@@ -309,28 +308,61 @@ const ri_main = {
             $(this).find("td").removeClass("tbl-illegal-col");
         });
     },
+    
+    findRuleIndex : (name) => {
+        for (let i = 0; i < ri_rule.cols.length; i++) {
+            if (ri_rule.cols[i].name == name) {
+                return i;
+            }
+        }
+        ri_rule.cols
+        return;
+    },
 
-    invalidRule : (values) => {
+    isPassRuleTest : (value, rule) => {
+        switch (rule.test) {
+            case "=":
+                return parseInt(value) == parseInt(rule.value);
+            case "!":
+                return parseInt(value) != parseInt(rule.value);
+            case ">":
+                return parseInt(value) > parseInt(rule.value);
+            case "<":
+                return parseInt(value) < parseInt(rule.value);
+            case ">=":
+                return parseInt(value) >= parseInt(rule.value);
+            case "<=":
+                return parseInt(value) <= parseInt(rule.value);
+        }
+        return true;
+    },
+
+    findIllegalIndex : (values) => {
         // TODO: 룰 검증
+        let illegalIdx = -1;
         for (let i = 0; i < ri_rule.cols.length; i++) {
             const rules = ri_rule.cols[i].rules;
             if (rules && rules.length > 0) {
 
             }
         }
-        
-        // 틀린 열 표시
-        const targetIdx = 10;
+                
+        // 틀린 룰이 없으면 리턴
+        if (illegalIdx == -1) {
+            return -1;
+        }
 
+        // 틀린 열 표시
         $(".tbl-input thead tr").each(function() {
-            $(this).find("th:eq("+ targetIdx +")").addClass("tbl-illegal-col");
+            $(this).find("th:eq("+ illegalIdx +")").addClass("tbl-illegal-col");
         });
 
         $(".tbl-input tbody tr").each(function() {
-            $(this).find("td:eq("+ targetIdx +")").addClass("tbl-illegal-col");
+            $(this).find("td:eq("+ illegalIdx +")").addClass("tbl-illegal-col");
         });
 
-        ri_main.scrollToFormTableColum(targetIdx);
+        ri_main.scrollToFormTableColum(illegalIdx);
+        return illegalIdx;
     },
 
     appendResultTableRow : (values, upload) => {
@@ -339,11 +371,12 @@ const ri_main = {
         newRow.append($("<td>").append($("<a>").addClass("delete-link").addClass("button").attr("href", "#").text("삭제")));
 
         // 룰 검증 처리
-        const msg = ri_main.invalidRule(values);
-        if (msg) {
+        const illegalIdx = ri_main.findIllegalIndex(values);
+        if (illegalIdx != -1) {
             // 업로드가 아니면 한줄 추가이므로 메시지 처리
             if (!upload) {
-                $("#illegal").val(msg);
+                let msgs = ri_main.makeRuleMessages(ri_rule.cols[illegalIdx].rules);
+                $("#illegal").val(msgs.join(" | "));
             }
             newRow.addClass("rule-invalid");
             newRow.append($("<td>").append("FALSE"));            
@@ -352,7 +385,7 @@ const ri_main = {
         }        
 
         // 입력 데이터 행 생성
-        for(let i = 0; i < ri_rule.cols.length; i++) {
+        for (let i = 0; i < ri_rule.cols.length; i++) {
             if (i < values.length) {
                 if (typeof values[i] === "string") {
                     values[i] = values[i].trim()
