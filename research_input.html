@@ -270,7 +270,7 @@ const ri_main = {
         }
 
         // 현재 행 삭제 이벤트 추가
-        $(".delete-link").on("click", e => {        
+        $(".delete-link").on("click", function(e) {
             e.preventDefault();
             $(this).closest("tr").remove();
         });
@@ -322,7 +322,7 @@ const ri_main = {
 
     getTableData : () => {
         const theadData = [];
-        $("#sheet1 thead th").each(() => {
+        $("#sheet1 thead th").each(function() {
             const data = String($(this).text());
             if ("구분" !== data) {
                 theadData.push(data);
@@ -330,9 +330,9 @@ const ri_main = {
         });
 
         const tbodyData = [];
-        $("#sheet1 tbody tr").each(() => {
+        $("#sheet1 tbody tr").each(function() {
             const rowData = [];
-            $(this).find("td").each(() => {
+            $(this).find("td").each(function() {
                 const data = String($(this).text());
                 if ("삭제" !== data) {
                     rowData.push(data);
