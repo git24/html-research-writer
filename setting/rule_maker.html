@@ -8,6 +8,18 @@
 
 <link rel="stylesheet" href="css/common.css">
 
+<script>
+    // 현재 사용 중인 Internet Explorer 버전 가져오기
+    var ua = window.navigator.userAgent;
+    var ieVersion = parseInt(ua.substring(ua.indexOf("MSIE ") + 5, ua.indexOf(".", ua.indexOf("MSIE "))));
+    
+    // Edge 모드 이하 버전을 확인하고, 해당 경우 크롬 설치 경로로 이동
+    if (ieVersion <= 11) {
+        alert("크롬 설치 후 다시 실행하세요. 크롬 설치 사이트로 이동합니다.");
+        window.location.href = "https://www.google.com/intl/ko_kr/chrome";
+    }
+</script>
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 <script src="../writer/js/rule.js"></script>
