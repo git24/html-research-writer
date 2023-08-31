@@ -4,16 +4,39 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 
-<title>리서치 입력 규칙 생성</title>
+<title>리서치 결과 입력 규칙 설정</title>
 
 <link rel="stylesheet" href="css/common.css">
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+<script src="../writer/js/rule.js"></script>
 
 </head>
 <body>
 
+    <div id="form-config">
+        설문항목수: <input type="number" min="1" step="1" id="colNum"><br>
+        
+        주의사항 박스<br>
+        <textarea id="caution"></textarea><br>
+        
+        <a href="javascript:rm_main.createTable();" class="button">입력</a> &nbsp; <a href="javascript:rm_main.initTable();" class="button">초기화</a>        
+    </div>
+
+    <div>
+        <table id="tbl-cols">
+            <thead>
+                <tr>
+                    <th>항목명 <a href="javascript:rm_main.appendRow();" class="button">행추가</a></th>
+                    <th>입력규칙</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
 
 <script src="js/rule_maker.js"></script>
 </body>
