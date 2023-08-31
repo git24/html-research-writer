@@ -447,6 +447,7 @@ const ri_main = {
 };
 
 $(document).ready(() => {
+    
     if ($.isEmptyObject(ri_rule)) {
         alert("입력 규칙 설정 후 사용 가능합니다.");
         $("#separatorBox, .input-box").attr("disabled", true);
