@@ -95,6 +95,19 @@ const rm_main = {
                 "caution" : $("#caution").val().replace(/\n/g, '<br>'),
                 "cols": []
             };
+
+            $("#rule tbody tr").each(function() {
+                const $row = $(this);
+                
+                // column name
+                const column = {
+                    name: $row.find("td:eq(1) input").val(),
+                    rules: []
+                };
+                
+                // rule
+                rule.cols.push(column);
+            });
     
             rm_main.createRuleFile(rule);
         },
