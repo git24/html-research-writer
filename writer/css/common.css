@@ -70,7 +70,7 @@ input[type="file"] {
     z-index: 1;
 }
 
-.tbl-head-message {
+.tbl-head-message, .tbl-head-memo {
     font-size: 12px;
     font-weight: lighter;
     background-color: #fcf9d2;
@@ -78,6 +78,10 @@ input[type="file"] {
 
 .tbl-head-message p {
     margin: 0;
+}
+
+.tbl-head-memo {
+    background-color: #e4fcd7;
 }
 
 .tbl-input tbody td {

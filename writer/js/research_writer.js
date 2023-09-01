@@ -69,19 +69,22 @@ const ri_main = {
         // 입력 폼 테이블 thead 설정
         const newRow = $("<tr>");
         const newMsg = $("<tr>");
-        ri_rule.cols.forEach(e => {
-            newRow.append($("<th>").append(e.name));
+        const newMemo = $("<tr>");
+        ri_rule.cols.forEach(col => {
+            newRow.append($("<th>").append(col.name));            
 
             const headMsg = $("<th>").addClass("tbl-head-message");            
-            if (e.rules) {
-                let msgs = ri_main.makeRuleMessages(e.rules);
+            if (col.rules) {
+                let msgs = ri_main.makeRuleMessages(col.rules);
                 for (let i = 0; i < msgs.length; i++) {
                     headMsg.append($("<p>").append(msgs[i]));
                 }
             }
             newMsg.append(headMsg);
+
+            newMemo.append($("<th>").addClass("tbl-head-memo").append(col.memo ? col.memo : ""));
         });
-        $(".tbl-input thead").append(newRow).append(newMsg);
+        $(".tbl-input thead").append(newRow).append(newMsg).append(newMemo);
     },
 
     initFormTableBody : () => {
