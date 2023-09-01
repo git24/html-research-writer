@@ -130,6 +130,9 @@ const rm_main = {
 
 
 $(document).ready(() => {
+    $(".collapsible").click(() => {
+        $(".content").slideToggle();
+    });
     
     if ($.isEmptyObject(ri_rule)) {
         alert("입력 규칙 설정 후 사용 가능합니다.");
