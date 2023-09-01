@@ -130,6 +130,11 @@ const rm_main = {
 
 
 $(document).ready(() => {
+    // 페이지를 떠날 때 발생하는 beforeunload 이벤트 처리
+    $(window).on("beforeunload", () => {
+        return "이 페이지를 떠나시겠습니까? 변경 내용이 저장되지 않을 수 있습니다.";
+    });
+    
     $(".collapsible").click(() => {
         $(".content").slideToggle();
     });
