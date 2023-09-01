@@ -27,21 +27,21 @@
 </head>
 <body>
 
-    <div id="form-config">
-        설문항목수: <input type="number" min="1" step="1" id="colNum"><br>
-        
-        주의사항 박스<br>
-        <textarea id="caution"></textarea><br>
-        
-        <a href="javascript:rm_main.createTable();" class="button">입력</a> &nbsp; <a href="javascript:rm_main.initTable();" class="button">초기화</a>        
+    <div class="form-config">
+        <a href="javascript:rm_main.eventHandler.createRule();" class="button">입력규칙 생성</a>&nbsp;
+        <a href="javascript:rm_main.eventHandler.initRule();" class="button">초기화</a>
+        <p>주의사항 박스 내용</p>
+        <textarea id="caution"></textarea>    
     </div>
 
-    <div>
-        <table id="tbl-cols">
+    <div class="result-cols">
+        <table id="rule">
             <thead>
                 <tr>
-                    <th>항목명 <a href="javascript:rm_main.appendRow();" class="button">행추가</a></th>
+                    <th><a href="javascript:rm_main.eventHandler.appendNewRow();" class="button">행추가</a></th>
+                    <th>항목명</th>
                     <th>입력규칙</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>

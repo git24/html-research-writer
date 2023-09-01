@@ -183,8 +183,12 @@ const ri_main = {
 
     appendResultTableRow : (values, options) => {
         // 첫번째는 삭제 버튼
-        const newRow = $("<tr>");                
-        newRow.append($("<td>").append($("<a>").addClass("delete-link").addClass("button").attr("href", "#").text("삭제")));
+        const newRow = $("<tr>");
+        const $delRow = $("<a>").addClass("button").attr("href", "#").text("삭제").click(function(e) {
+            e.preventDefault();
+            $(this).closest("tr").remove();
+        });
+        newRow.append($("<td>").append($delRow));
 
         // 룰 검증 처리
         const illegalIdx = ri_main.findIllegalIndex(values);
@@ -245,12 +249,6 @@ const ri_main = {
             // 테이블에 행이 없는 경우, tbody 내부에 직접 추가합니다.
             $(".tbl-result tbody").append(newRow);
         }
-
-        // 현재 행 삭제 이벤트 추가
-        $(".delete-link").on("click", function(e) {
-            e.preventDefault();
-            $(this).closest("tr").remove();
-        });
     },
 
     scrollToEnd : () => {
