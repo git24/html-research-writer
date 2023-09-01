@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+<title>리서치 결과 입력</title>
+
+<link rel="stylesheet" href="css/common.css">
+
+<script>
+    // 현재 사용 중인 Internet Explorer 버전 가져오기
+    var ua = window.navigator.userAgent;
+    var ieVersion = parseInt(ua.substring(ua.indexOf("MSIE ") + 5, ua.indexOf(".", ua.indexOf("MSIE "))));
+    
+    // Edge 모드 이하 버전을 확인하고, 해당 경우 크롬 설치 경로로 이동
+    if (ieVersion <= 11) {
+        alert("크롬 설치 후 다시 실행하세요. 크롬 설치 사이트로 이동합니다.");
+        window.location.href = "https://www.google.com/intl/ko_kr/chrome";
+    }
+</script>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+<script src="js/rule.js"></script>
+
+</head>
+<body>
+    <div class="top-fixed no-wrap">
+        <div>
+            <a href="javascript:ri_main.eventHandler.onClickDownload();" class="button">다운로드</a>
+            <input type="file" id="excelUpload" accept=".xlsx">
+            <a href="javascript:ri_main.eventHandler.onClickUpload();" class="button">업로드</a>
+        </div>        
+        <div>
+            <label for="separator">구분자:</label>
+            <select id="separator">
+                <option value=" " selected>(공백)</option>
+                <option value=",">,</option>
+                <option value="/">/</option>
+            </select>
+            <input type="text" id="separatorBox" class="input-form-box">&nbsp;<a href="javascript:ri_main.eventHandler.onClickInput();" class="button">간편입력</a><br>
+            <label>검증결과: <input type="text" id="illegal" class="input-form-box illegal" disabled></label>
+        </div>
+        <div class="overflow">
+            <table class="tbl-input">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div>            
+            <a href="javascript:ri_main.eventHandler.onClickFormInput();" class="button">입력</a>&nbsp;&nbsp;
+            <a href="javascript:ri_main.eventHandler.onClickFormInit();" class="button">초기화</a>&nbsp;&nbsp;
+            <label><input type="checkbox" id="autoInit">입력 후 자동 초기화</label>
+        </div>
+    </div>    
+    <div class="content no-wrap">
+        <!-- 입력 결과 출력 (삭제 기능) -->
+        <table id="sheet1" class="tbl-result">
+            <thead></thead>
+            <tbody></tbody>        
+        </table>
+    </div>
+    
+    <div id="caution" class="floating-box hidden"></div>    
+
+<script src="js/research_writer.js"></script>
+</body>
+</html>
