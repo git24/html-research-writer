@@ -36,17 +36,14 @@ th {
     background-color: #0056b3;
 }
 
-.form-config {
+.form-config, .content {
     padding: 5px;
-}
-
-.form-config {
     font-size: 14px;
 }
 
 .form-config textarea {
-    width: 250px;
-    height: 80px;
+    width: 350px;
+    height: 150px;
 }
 
 .result-cols {
@@ -54,5 +51,29 @@ th {
 }
 
 .column-name {
-    width: 80px;
+    width: 50px;
+}
+
+.apply, .deploy {
+    font-size: 14px;
+    line-height: 1.5;
+    background-color: #ffefcd;
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+
+.deploy {
+    background-color: #c6d0ff;
+}
+
+.collapsible {
+    background-color: #ffbcbc;
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+
+.content {
+    display: none;
+    padding: 5px;
 }

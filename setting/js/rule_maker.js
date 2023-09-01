@@ -95,6 +95,19 @@ const rm_main = {
                 "caution" : $("#caution").val().replace(/\n/g, '<br>'),
                 "cols": []
             };
+
+            $("#rule tbody tr").each(function() {
+                const $row = $(this);
+                
+                // column name
+                const column = {
+                    name: $row.find("td:eq(1) input").val(),
+                    rules: []
+                };
+                
+                // rule
+                rule.cols.push(column);
+            });
     
             rm_main.createRuleFile(rule);
         },
@@ -117,6 +130,14 @@ const rm_main = {
 
 
 $(document).ready(() => {
+    // 페이지를 떠날 때 발생하는 beforeunload 이벤트 처리
+    $(window).on("beforeunload", () => {
+        return "이 페이지를 떠나시겠습니까? 변경 내용이 저장되지 않을 수 있습니다.";
+    });
+    
+    $(".collapsible").click(() => {
+        $(".content").slideToggle();
+    });
     
     if ($.isEmptyObject(ri_rule)) {
         alert("입력 규칙 설정 후 사용 가능합니다.");

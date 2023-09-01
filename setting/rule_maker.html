@@ -27,10 +27,36 @@
 </head>
 <body>
 
+
+    <div class="collapsible"><b>(접기/펼치기)</b> 입력규칙 적용 / 입력 프로그램 배포 방법</div>
+    <div class="content">
+        <p class="apply"><b>입력규칙 적용방법</b><br>
+            1. 입력규칙 생성 버튼 클릭하여 rule.js 파일을 다운로드 받는다<br>
+            2. 다운로드 받은 파일을 writer/js 폴더 안으로 복사한다<br><br>
+            <b>주의:</b> 기존 writer/js/rule.js 파일은 삭제 혹은 다운로드 파일로 교체한다
+            
+        </p>
+
+        <p class="deploy"><b>입력 프로그램 배포 후 실행방법</b><br>
+            1. writer 폴더를 압축하여 작업자에게 보내준다.<br>
+            2. 작업자는 압축해제 후 writer 폴더 안에 research_writer.html 을 실행<br>
+            3. 구글 크롬 브라우저, IE Edge 브라우저에서 동작 가능<br>
+            4. 작업자는 설문결과 입력 후 엑셀로 다운로드 하여 해당 엑셀만 취합하여 작업 진행 <br>
+            5. 작업자는 엑셀이 설치되어 있지 않는 경우 다운로드 받은 엑셀을 확인할 수 없음<br>
+            6. 설문결과 입력 프로그램에서 다운로드 받은 엑셀을 다시 업로드하여 이어서 작업 가능<br>
+            7. 작업자가 다운로드 받은 엑셀을 엑셀 프로그램에서 직접 수정하는 것은 권장하지 않음<br>
+            &nbsp;&nbsp; 프로그램에서 다운로드 받은 엑셀이 아닌 다른 엑셀을 업로드할 경우 정상동작하지 않음
+            <br><br>
+            <b>주의:</b> Window 7이나 그 이하 버전은 반드시 크롬 브라우저 다운로드 후 실행<br>
+            (실행할 수 없는 브라우저는 자동으로 크롬 다운로드 사이트로 이동됨)
+        </p>
+    </div>
+
     <div class="form-config">
         <a href="javascript:rm_main.eventHandler.createRule();" class="button">입력규칙 생성</a>&nbsp;
         <a href="javascript:rm_main.eventHandler.initRule();" class="button">초기화</a>
-        <p>주의사항 박스 내용</p>
+
+        <p><b>주의사항 박스 내용</b></p>
         <textarea id="caution"></textarea>    
     </div>
 

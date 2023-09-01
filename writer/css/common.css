@@ -108,20 +108,7 @@ input[type="file"] {
 }
 
 .content {
-    padding-top: 240px; /* 상단 고정 요소의 높이만큼 여백 추가 */
-}
-
-.floating-box {
-    background-color: #f8e5db;
-    position: fixed;
-    bottom: 50px;
-    right: 5px;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s;
-    opacity: 0.9;
+    padding-top: 240px;
 }
 
 .rule-invalid {
@@ -141,4 +128,17 @@ input[type="file"] {
 
 .hidden {
     display: none;
+}
+
+.floating-box {
+    background-color: #f8e5db;
+    position: fixed;
+    bottom: 50px;
+    right: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+    opacity: 0.9;
 }

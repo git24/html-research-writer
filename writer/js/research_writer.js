@@ -388,7 +388,7 @@ const ri_main = {
 
         onClickUpload : () => {
             // 테이블 초기화 후 진행되므로 경고
-            if (!confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
+            if ($(".tbl-result tbody tr").length > 0 && !confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
                 return;
             }
 
@@ -445,7 +445,11 @@ const ri_main = {
 };
 
 $(document).ready(() => {
-    
+    // 페이지를 떠날 때 발생하는 beforeunload 이벤트 처리
+    $(window).on("beforeunload", () => {
+        return "이 페이지를 떠나시겠습니까? 변경 내용이 저장되지 않을 수 있습니다.";
+    });
+
     if ($.isEmptyObject(ri_rule)) {
         alert("입력 규칙 설정 후 사용 가능합니다.");
         $("#separatorBox, .input-box").attr("disabled", true);
