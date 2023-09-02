@@ -17,10 +17,6 @@ const rm_main = {
     },
 
     createInputRule : rule => {
-        if (rule === undefined) {
-            rule = {};
-        }
-
         const $div = $("<div>").addClass("rule-line");
 
         const $delRule = $("<a>").addClass("button").attr("href", "#").text("규칙 삭제").click(function(e) {
@@ -31,7 +27,7 @@ const rm_main = {
 
         $div.append($("<input>", {
             type: 'number',
-            value: setDefaultString(rule.value, ""), 
+            value: setDefaultString(rule?.value, ""), 
             min: 0, 
             step: 1
         }));
@@ -43,18 +39,18 @@ const rm_main = {
         $selTest.append($("<option>").attr("value", ">=").text("보다 크거나 같으면"));
         $selTest.append($("<option>").attr("value", "<").text("보다 작으면"));
         $selTest.append($("<option>").attr("value", ">=").text("보다 작거나 같으면"));
-        $selTest.val(setDefaultString(rule.test, "="));
+        $selTest.val(setDefaultString(rule?.test, "="));
         $div.append($selTest);
     
         $div.append($("<input>", {
             type: 'text',
-            value: setDefaultString(rule.dest, "")
+            value: setDefaultString(rule?.dest, "")
         }));
 
         const $selEmpty = $("<select>");
         $selEmpty.append($("<option>").attr("value", "f").text("항목은 필수입력"));
         $selEmpty.append($("<option>").attr("value", "t").text("항목은 입력X"));
-        $selEmpty.val(setDefaultString(rule.empty, "f"));
+        $selEmpty.val(setDefaultString(rule?.empty, "f"));
 
         $div.append($selEmpty);
 

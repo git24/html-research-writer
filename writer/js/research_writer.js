@@ -124,7 +124,7 @@ const ri_main = {
     
     findRuleIndex : (name) => {
         if (name === undefined || name.length == 0) {
-            return;
+            return -1;
         }
 
         for (let i = 0; i < ri_rule.cols.length; i++) {
@@ -133,7 +133,7 @@ const ri_main = {
             }
         }
         ri_rule.cols
-        return;
+        return -1;
     },
 
     isPassRuleTest : (value, rule) => {
@@ -155,7 +155,6 @@ const ri_main = {
     },
 
     findIllegalIndex : (values) => {
-        // TODO: 룰 검증
         for (let i = 0; i < ri_rule.cols.length; i++) {
             const rules = ri_rule.cols[i].rules;
             if (rules && rules.length > 0) {
@@ -199,7 +198,7 @@ const ri_main = {
         const illegalIdx = ri_main.findIllegalIndex(values);
         if (illegalIdx != -1) {
             // 업로드가 아니면 한줄 추가이므로 메시지 처리
-            const optionType = (options === undefined || options.type === undefined) ? "" : String(options.type);
+            const optionType = (options?.type === undefined) ? "" : String(options.type);
             if (optionType != "upload") {
                 let msgs = ri_main.makeRuleMessages(ri_rule.cols[illegalIdx].rules);
                 $("#illegal").val(msgs.join(" | "));
@@ -419,8 +418,10 @@ const ri_main = {
                         // 검증 컬럼 제외
                         if (col > 0) {
                             const cellAddress = XLSX.utils.encode_cell({r: row, c: col});
-                            const cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : undefined;
-                            values.push(cellValue);
+                            const cellValue = worksheet[cellAddress]?.v;
+                            if (cellAddress !== undefined) {
+                                values.push(cellValue);
+                            }
                         }
                     }
                     ri_main.triggerAppendTableRow(values, {type: "upload"});
