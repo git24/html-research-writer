@@ -1,17 +1,17 @@
 const rm_main = {
 
     replaceNewLineToHtml : (str) => {
-        return String(str.replace(/\n/g, '<br>'));
+        return String(str).replace(/\n/g, '<br>');
     },
 
     replaceHtmlToNewLine : (str) => {
-        return String(str.replace(/<br\s*\/?>/g, '\n'));
+        return String(str).replace(/<br\s*\/?>/g, '\n');
     },
 
     createTdColumnName : name => {
         const $input = $('<input type="text">').addClass("column-name");
         if (name) {
-            $input.val(name);
+            $input.val(String(name));
         }
         return $("<td>").append($input);
     },
@@ -24,7 +24,7 @@ const rm_main = {
     createTdMemo : (memo) => {
         const $textarea = $('<textarea>').addClass("column-memo");
         if (memo) {
-            $textarea.val(memo);
+            $textarea.val(rm_main.replaceHtmlToNewLine(memo));
         }
         return $("<td>").append($textarea);
     },
