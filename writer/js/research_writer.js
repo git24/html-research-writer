@@ -50,12 +50,12 @@ const ri_main = {
                     break;
             }
 
-            if (rules[i].to) {
+            if (rules[i].to && String(rules[i].to).length > 0) {
                 msg += " " + rules[i].to + "번 필수";
             }
 
-            if (rules[i].empty) {
-                if (rules[i].to) {
+            if (rules[i].empty && String(rules[i].empty).length > 0) {
+                if (rules[i].to && String(rules[i].to).length > 0) {
                     msg += ","
                 }
                 msg += " " + rules[i].empty + "번 입력X";
@@ -109,7 +109,7 @@ const ri_main = {
 
     initCautionBox : () => {
         // 주의 상자 설정
-        if (ri_rule.caution && ri_rule.caution.length > 0) {
+        if (ri_rule.caution && String(ri_rule.caution).length > 0) {
             $("#caution").append(ri_rule.caution).removeClass("hidden");
         }
     },
@@ -197,7 +197,7 @@ const ri_main = {
         const illegalIdx = ri_main.findIllegalIndex(values);
         if (illegalIdx != -1) {
             // 업로드가 아니면 한줄 추가이므로 메시지 처리
-            if (!options || options.type != "upload") {
+            if (!(options && options.type && options.type == "upload")) {
                 let msgs = ri_main.makeRuleMessages(ri_rule.cols[illegalIdx].rules);
                 $("#illegal").val(msgs.join(" | "));
 
@@ -265,7 +265,7 @@ const ri_main = {
     },
 
     triggerAppendTableRow : (values, options) => {
-        if (!values || values.length == 0) {
+        if (!(values && values.length > 0)) {
             return;
         }
 
@@ -275,7 +275,7 @@ const ri_main = {
             ri_main.clearForm();
         }
 
-        if (options && options.type != "upload") {
+        if (!(options && options.type && options.type == "upload")) {
             ri_main.scrollToEnd();
         }        
     },
@@ -308,7 +308,7 @@ const ri_main = {
         const theadRows = [];
         $("#sheet1 thead th").each(function() {
             const value = String($(this).text());
-            if ("구분" !== value) {
+            if (value != "구분") {
                 theadRows.push(value);
             }
         });
@@ -317,9 +317,9 @@ const ri_main = {
         $("#sheet1 tbody tr").each(function() {
             const row = [];
             $(this).find("td").each(function() {
-                const data = String($(this).text());
-                if ("삭제" !== data) {
-                    row.push(data);
+                const value = String($(this).text());
+                if (value != "삭제") {
+                    row.push(value);
                 }
             });
             tbodyRows.push(row);
@@ -391,7 +391,11 @@ const ri_main = {
 
         onClickUpload : () => {
             // 테이블 초기화 후 진행되므로 경고
-            if ($(".tbl-result tbody tr").length > 0 && !confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
+            if ($(".tbl-result tbody tr").length == 0) {
+                return;
+            }
+
+            if (!confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
                 return;
             }
 
