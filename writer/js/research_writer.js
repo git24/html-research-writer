@@ -50,16 +50,13 @@ const ri_main = {
                     break;
             }
 
-            if (rules[i].to) {
-                msg += " " + rules[i].to + "번 필수";
+            const dest = rules[i].dest === undefined ? "" : String(rules[i].dest);
+            const empty = rules[i].empty === undefined ? "f" : String(rules[i].empty);
+
+            if (dest.length > 0 && (empty == "t" || empty == "f")) {
+                msg += " " + dest + " 항목 " + (empty == "t" ? "입력X" : "필수입력");
             }
 
-            if (rules[i].empty) {
-                if (rules[i].to) {
-                    msg += ","
-                }
-                msg += " " + rules[i].empty + "번 입력X";
-            }
             msgs.push(msg);
         }
         return msgs;
@@ -69,19 +66,22 @@ const ri_main = {
         // 입력 폼 테이블 thead 설정
         const newRow = $("<tr>");
         const newMsg = $("<tr>");
-        ri_rule.cols.forEach(e => {
-            newRow.append($("<th>").append(e.name));
+        const newMemo = $("<tr>");
+        ri_rule.cols.forEach(col => {
+            newRow.append($("<th>").append(col.name));            
 
             const headMsg = $("<th>").addClass("tbl-head-message");            
-            if (e.rules) {
-                let msgs = ri_main.makeRuleMessages(e.rules);
+            if (col.rules) {
+                let msgs = ri_main.makeRuleMessages(col.rules);
                 for (let i = 0; i < msgs.length; i++) {
                     headMsg.append($("<p>").append(msgs[i]));
                 }
             }
             newMsg.append(headMsg);
+
+            newMemo.append($("<th>").addClass("tbl-head-memo").append(col.memo ? col.memo : ""));
         });
-        $(".tbl-input thead").append(newRow).append(newMsg);
+        $(".tbl-input thead").append(newRow).append(newMsg).append(newMemo);
     },
 
     initFormTableBody : () => {
@@ -106,9 +106,20 @@ const ri_main = {
 
     initCautionBox : () => {
         // 주의 상자 설정
-        if (ri_rule.caution && ri_rule.caution.length > 0) {
-            $("#caution").append(ri_rule.caution).removeClass("hidden");
+        const caution = ri_rule.caution === undefined ? "" : String(ri_rule.caution);
+        if (caution.length > 0) {
+            $("#caution").append(caution).removeClass("hidden");
         }
+    },
+
+    initIllegal : () => {
+        $("#illegal").val("");
+        $(".tbl-input thead tr").each(function() {
+            $(this).find("th").removeClass("tbl-illegal-col");
+        });
+        $(".tbl-input tbody tr").each(function() {
+            $(this).find("td").removeClass("tbl-illegal-col");
+        });
     },
 
     clearForm : () => {
@@ -122,13 +133,17 @@ const ri_main = {
     },
     
     findRuleIndex : (name) => {
+        if (name === undefined || name.length == 0) {
+            return -1;
+        }
+
         for (let i = 0; i < ri_rule.cols.length; i++) {
             if (ri_rule.cols[i].name == name) {
                 return i;
             }
         }
         ri_rule.cols
-        return;
+        return -1;
     },
 
     isPassRuleTest : (value, rule) => {
@@ -146,15 +161,44 @@ const ri_main = {
             case "<=":
                 return parseInt(value) <= parseInt(rule.value);
         }
-        return true;
+        return false;
     },
 
     findIllegalIndex : (values) => {
-        // TODO: 룰 검증
+        if (values === undefined || values.length == 0) {
+            return -1;
+        }
+
+        if (values.length < ri_rule.cols.length) {
+            return -1;
+        }
+
         for (let i = 0; i < ri_rule.cols.length; i++) {
             const rules = ri_rule.cols[i].rules;
-            if (rules && rules.length > 0) {
-                // TODO: 룰 검증...
+            if (rules === undefined) {
+                continue;
+            }
+            
+            for (let j = 0; j < rules.length; j++) {
+                const rule = rules[j];
+                if (!ri_main.isPassRuleTest(values[i], rule)) {
+                    continue;
+                }
+
+                const destIdx = ri_main.findRuleIndex(rule.dest);
+                if (destIdx == -1) {
+                    continue;
+                }
+                
+                if (rule.empty == "t") {
+                    if (values[destIdx].length > 0) {
+                        return i;
+                    }
+                } else if (rule.empty == "f") {
+                    if (values[destIdx].length == 0) {
+                        return i;
+                    }
+                }
             }
         }                
         // return 11;
@@ -194,11 +238,16 @@ const ri_main = {
         const illegalIdx = ri_main.findIllegalIndex(values);
         if (illegalIdx != -1) {
             // 업로드가 아니면 한줄 추가이므로 메시지 처리
-            if (!options || options.type != "upload") {
+            const optionType = (options?.type === undefined) ? "" : String(options.type);
+            if (optionType != "upload") {
                 let msgs = ri_main.makeRuleMessages(ri_rule.cols[illegalIdx].rules);
                 $("#illegal").val(msgs.join(" | "));
 
                 ri_main.drawIllegalFormTable(illegalIdx);
+
+                if ($("#illegalRule").prop("checked")) {
+                    return;
+                }
             }
             newRow.append($("<td>").addClass("rule-invalid").append("FALSE"));            
         } else {
@@ -262,7 +311,7 @@ const ri_main = {
     },
 
     triggerAppendTableRow : (values, options) => {
-        if (!values || values.length == 0) {
+        if (!(values && values.length > 0)) {
             return;
         }
 
@@ -272,17 +321,13 @@ const ri_main = {
             ri_main.clearForm();
         }
 
-        if (options && options.type != "upload") {
+        if (!(options && options.type && options.type == "upload")) {
             ri_main.scrollToEnd();
         }        
     },
 
     isEmptyValue : values => {
-        if (!values) {
-            return true;
-        }
-
-        if (values.length == 0) {
+        if (!(values && values.length > 0)) {
             return true;
         }
 
@@ -305,7 +350,7 @@ const ri_main = {
         const theadRows = [];
         $("#sheet1 thead th").each(function() {
             const value = String($(this).text());
-            if ("구분" !== value) {
+            if (value != "구분") {
                 theadRows.push(value);
             }
         });
@@ -314,9 +359,9 @@ const ri_main = {
         $("#sheet1 tbody tr").each(function() {
             const row = [];
             $(this).find("td").each(function() {
-                const data = String($(this).text());
-                if ("삭제" !== data) {
-                    row.push(data);
+                const value = String($(this).text());
+                if (value != "삭제") {
+                    row.push(value);
                 }
             });
             tbodyRows.push(row);
@@ -356,7 +401,9 @@ const ri_main = {
     },
 
     eventHandler : {
-        onClickInput : () => {           
+        onClickInput : () => {
+            ri_main.initIllegal();
+
             const values = ri_main.getSeparatorValues();
             if (ri_main.isEmptyValue(values)) {
                 return;
@@ -417,8 +464,10 @@ const ri_main = {
                         // 검증 컬럼 제외
                         if (col > 0) {
                             const cellAddress = XLSX.utils.encode_cell({r: row, c: col});
-                            const cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : undefined;
-                            values.push(cellValue);
+                            const cellValue = worksheet[cellAddress]?.v;
+                            if (cellAddress !== undefined) {
+                                values.push(cellValue);
+                            }
                         }
                     }
                     ri_main.triggerAppendTableRow(values, {type: "upload"});
@@ -428,6 +477,8 @@ const ri_main = {
         },
 
         onClickFormInput : () => {
+            ri_main.initIllegal();
+
             const values = ri_main.getFormTableValues();
             if (ri_main.isEmptyValue(values)) {
                 return;
