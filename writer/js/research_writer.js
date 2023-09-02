@@ -50,15 +50,18 @@ const ri_main = {
                     break;
             }
 
-            if (rules[i].to && String(rules[i].to).length > 0) {
-                msg += " " + rules[i].to + "번 필수";
+            const to = rules[i].to === undefined ? "" : String(rules[i].to);
+            const empty = rules[i].empty === undefined ? "" : String(rules[i].empty);
+
+            if (to.length > 0) {
+                msg += " " + to + "번 필수";
             }
 
-            if (rules[i].empty && String(rules[i].empty).length > 0) {
-                if (rules[i].to && String(rules[i].to).length > 0) {
+            if (empty.length > 0) {
+                if (to.length > 0) {
                     msg += ","
                 }
-                msg += " " + rules[i].empty + "번 입력X";
+                msg += " " + empty + "번 입력X";
             }
             msgs.push(msg);
         }
@@ -109,8 +112,9 @@ const ri_main = {
 
     initCautionBox : () => {
         // 주의 상자 설정
-        if (ri_rule.caution && String(ri_rule.caution).length > 0) {
-            $("#caution").append(ri_rule.caution).removeClass("hidden");
+        const caution = ri_rule.caution === undefined ? "" : String(ri_rule.caution);
+        if (caution.length > 0) {
+            $("#caution").append(caution).removeClass("hidden");
         }
     },
 
@@ -125,6 +129,10 @@ const ri_main = {
     },
     
     findRuleIndex : (name) => {
+        if (name === undefined || name.length == 0) {
+            return;
+        }
+
         for (let i = 0; i < ri_rule.cols.length; i++) {
             if (ri_rule.cols[i].name == name) {
                 return i;
@@ -197,7 +205,8 @@ const ri_main = {
         const illegalIdx = ri_main.findIllegalIndex(values);
         if (illegalIdx != -1) {
             // 업로드가 아니면 한줄 추가이므로 메시지 처리
-            if (!(options && options.type && options.type == "upload")) {
+            const optionType = (options === undefined || options.type === undefined) ? "" : String(options.type);
+            if (optionType != "upload") {
                 let msgs = ri_main.makeRuleMessages(ri_rule.cols[illegalIdx].rules);
                 $("#illegal").val(msgs.join(" | "));
 
@@ -281,11 +290,7 @@ const ri_main = {
     },
 
     isEmptyValue : values => {
-        if (!values) {
-            return true;
-        }
-
-        if (values.length == 0) {
+        if (!(values && values.length > 0)) {
             return true;
         }
 
@@ -391,11 +396,7 @@ const ri_main = {
 
         onClickUpload : () => {
             // 테이블 초기화 후 진행되므로 경고
-            if ($(".tbl-result tbody tr").length == 0) {
-                return;
-            }
-
-            if (!confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
+            if ($(".tbl-result tbody tr").length > 0 && !confirm("현재까지 입력된 내용이 초기화 됩니다.\n계속 하시겠습니까?")) {
                 return;
             }
 
