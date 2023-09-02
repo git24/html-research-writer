@@ -34,26 +34,26 @@ const rm_main = {
             value: setDefaultString(rule.value, ""), 
             min: 0, 
             step: 1
-        })).append(" 과(와) ");
+        }));
 
         const $selTest = $("<select>");
-        $selTest.append($("<option>").attr("value", "=").text("같으면"));
-        $selTest.append($("<option>").attr("value", "!").text("다르면"));
-        $selTest.append($("<option>").attr("value", ">").text("크면"));
-        $selTest.append($("<option>").attr("value", ">=").text("크거나 같으면"));
-        $selTest.append($("<option>").attr("value", "<").text("작으면"));
-        $selTest.append($("<option>").attr("value", ">=").text("작거나 같으면"));
+        $selTest.append($("<option>").attr("value", "=").text("과(와) 같으면"));
+        $selTest.append($("<option>").attr("value", "!").text("과(와) 다르면"));
+        $selTest.append($("<option>").attr("value", ">").text("보다 크면"));
+        $selTest.append($("<option>").attr("value", ">=").text("보다 크거나 같으면"));
+        $selTest.append($("<option>").attr("value", "<").text("보다 작으면"));
+        $selTest.append($("<option>").attr("value", ">=").text("보다 작거나 같으면"));
         $selTest.val(setDefaultString(rule.test, "="));
         $div.append($selTest);
     
         $div.append($("<input>", {
             type: 'text',
             value: setDefaultString(rule.dest, "")
-        })).append(" 항목은 ");
+        }));
 
         const $selEmpty = $("<select>");
-        $selEmpty.append($("<option>").attr("value", "f").text("필수입력"));
-        $selEmpty.append($("<option>").attr("value", "t").text("입력X"));
+        $selEmpty.append($("<option>").attr("value", "f").text("항목은 필수입력"));
+        $selEmpty.append($("<option>").attr("value", "t").text("항목은 입력X"));
         $selEmpty.val(setDefaultString(rule.empty, "f"));
 
         $div.append($selEmpty);
@@ -124,8 +124,6 @@ const rm_main = {
 
     getRow : ($row) => {
         // 파라메터는 JQuery TR
-        const memo = $row.find(".column-memo").val().trim();
-
         const column = {}    
         column.name = $row.find(".column-name").val().trim();        
 
@@ -134,6 +132,7 @@ const rm_main = {
             column.rules = rules;
         }
 
+        const memo = $row.find(".column-memo").val().trim();
         if (memo.length > 0) {
             column.memo = memo;
         }
