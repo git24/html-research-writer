@@ -55,7 +55,7 @@ th {
 }
 
 .column-memo {
-    width: 80px;
+    width: 150px;
     height: 60px;
 }
 
@@ -81,4 +81,21 @@ th {
 .content {
     display: none;
     padding: 5px;
+}
+
+.cell-rule {
+    vertical-align: top;
+}
+
+.rule-line {
+    width: 380px;
+    font-size: 12px;
+}
+
+.rule-line > * {
+    margin: 2px;
+}
+
+.rule-line input {
+    width: 50px;
 }

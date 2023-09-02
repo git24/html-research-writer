@@ -50,19 +50,13 @@ const ri_main = {
                     break;
             }
 
-            const to = rules[i].to === undefined ? "" : String(rules[i].to);
-            const empty = rules[i].empty === undefined ? "" : String(rules[i].empty);
+            const dest = rules[i].dest === undefined ? "" : String(rules[i].dest);
+            const empty = rules[i].empty === undefined ? "f" : String(rules[i].empty);
 
-            if (to.length > 0) {
-                msg += " " + to + "번 필수";
+            if (dest.length > 0 && (empty == "t" || empty == "f")) {
+                msg += " " + dest + " 항목 " + (empty == "t" ? "입력X" : "필수입력");
             }
 
-            if (empty.length > 0) {
-                if (to.length > 0) {
-                    msg += ","
-                }
-                msg += " " + empty + "번 입력X";
-            }
             msgs.push(msg);
         }
         return msgs;

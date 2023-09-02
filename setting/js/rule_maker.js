@@ -1,3 +1,11 @@
+function setDefaultString(inputString, defaultValue) {
+    const str = String(inputString);
+    if (inputString === undefined || inputString === null || str.trim() === '') {
+        return defaultValue;
+    }
+    return str;
+}
+
 const rm_main = {
 
     replaceNewLineToHtml : (str) => {
@@ -6,6 +14,53 @@ const rm_main = {
 
     replaceHtmlToNewLine : (str) => {
         return String(str).replace(/<br\s*\/?>/g, '\n');
+    },
+
+    createInputRule : rule => {
+        if (rule === undefined) {
+            rule = {};
+        }
+
+        const $div = $("<div>").addClass("rule-line");
+
+        const $delRule = $("<a>").addClass("button").attr("href", "#").text("규칙 삭제").click(function(e) {
+            e.preventDefault();
+            $(this).closest('.rule-line').remove();
+        });
+        $div.append($delRule);
+
+        $div.append($("<input>", {
+            type: 'number', 
+            name: 'value', 
+            value: setDefaultString(rule.value, ""), 
+            min: 0, 
+            step: 1
+        })).append(" 과(와) ");
+
+        const $selTest = $("<select>");
+        $selTest.append($("<option>").attr("value", "").text("(조건선택)"));
+        $selTest.append($("<option>").attr("value", "=").text("같으면"));
+        $selTest.append($("<option>").attr("value", "!").text("다르면"));
+        $selTest.append($("<option>").attr("value", ">").text("크면"));
+        $selTest.append($("<option>").attr("value", ">=").text("크거나 같으면"));
+        $selTest.append($("<option>").attr("value", "<").text("작으면"));
+        $selTest.append($("<option>").attr("value", ">=").text("작거나 같으면"));
+        $selTest.val(setDefaultString(rule.text, ""));
+    
+        $div.append($("<input>", {
+            type: 'text',
+            name: 'colName', 
+            value: setDefaultString(rule.dest, "")
+        })).append(" 항목은 ");
+
+        const $selEmpty = $("<select>");
+        $selEmpty.append($("<option>").attr("value", "f").text("필수입력"));
+        $selEmpty.append($("<option>").attr("value", "t").text("입력X"));
+        $selEmpty.val(setDefaultString(rule.empty, "f"));
+
+        $div.append($selEmpty);
+
+        return $div;
     },
 
     createTdColumnName : name => {
@@ -17,8 +72,23 @@ const rm_main = {
     },
 
     createTdRule : rules => {
-        // TODO
-        return $("<td>");
+        const $addRule = $("<a>").addClass("button").attr("href", "#").text("규칙 추가").click(function(e) {
+            e.preventDefault();
+            $(this).closest('.cell-rule').append(rm_main.createInputRule());
+        });
+        
+        const $td = $("<td>");
+        const $div = $("<div>").addClass("cell-rule").append($addRule);        
+
+        if (rules === undefined) {
+            return $td.append($div);
+        }
+
+        for (let i = 0; i < rules.length; i++) {
+            $div.append(rm_main.createInputRule(rules[i]));
+        }
+
+        return $td.append($div);
     },
 
     createTdMemo : (memo) => {
@@ -41,7 +111,7 @@ const rm_main = {
     createRow : (colName, rules, memo) => {
         const $newRow = $("<tr>");
         const $delRow = $("<a>").addClass("button").attr("href", "#").text("삭제").click(function(e) {
-            e.preventDefault();
+            e.preventDefault();            
             $(this).closest("tr").remove();
         });
         $newRow.append($("<td>").append($delRow));
@@ -51,11 +121,11 @@ const rm_main = {
         $newRow.append(rm_main.createTdMemo(memo));
 
         const $copyRow = $("<a>").addClass("button").attr("href", "#").text("복사").click(function(e) {
+            e.preventDefault();
             const $currentRow = $(this).closest("tr");
             const column = rm_main.getRow($currentRow);
             const $copyRow = rm_main.createRow(column.name, column.rules, column.memo);
             $currentRow.after($copyRow);
-            rm_main.scrollToTargetRow($currentRow.index() + 1);
         });
         $newRow.append($("<td>").append($copyRow));
         return $newRow;
