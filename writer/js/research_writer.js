@@ -112,6 +112,16 @@ const ri_main = {
         }
     },
 
+    initIllegal : () => {
+        $("#illegal").val("");
+        $(".tbl-input thead tr").each(function() {
+            $(this).find("th").removeClass("tbl-illegal-col");
+        });
+        $(".tbl-input tbody tr").each(function() {
+            $(this).find("td").removeClass("tbl-illegal-col");
+        });
+    },
+
     clearForm : () => {
         $(".tbl-input tr input, .input-form-box").val("");
         $(".tbl-input thead tr").each(function() {
@@ -151,14 +161,44 @@ const ri_main = {
             case "<=":
                 return parseInt(value) <= parseInt(rule.value);
         }
-        return true;
+        return false;
     },
 
     findIllegalIndex : (values) => {
+        if (values === undefined || values.length == 0) {
+            return -1;
+        }
+
+        if (values.length < ri_rule.cols.length) {
+            return -1;
+        }
+
         for (let i = 0; i < ri_rule.cols.length; i++) {
             const rules = ri_rule.cols[i].rules;
-            if (rules && rules.length > 0) {
-                // TODO: 룰 검증...
+            if (rules === undefined) {
+                continue;
+            }
+            
+            for (let j = 0; j < rules.length; j++) {
+                const rule = rules[j];
+                if (!ri_main.isPassRuleTest(values[i], rule)) {
+                    continue;
+                }
+
+                const destIdx = ri_main.findRuleIndex(rule.dest);
+                if (destIdx == -1) {
+                    continue;
+                }
+                
+                if (rule.empty == "t") {
+                    if (values[destIdx].length > 0) {
+                        return i;
+                    }
+                } else if (rule.empty == "f") {
+                    if (values[destIdx].length == 0) {
+                        return i;
+                    }
+                }
             }
         }                
         // return 11;
@@ -204,6 +244,10 @@ const ri_main = {
                 $("#illegal").val(msgs.join(" | "));
 
                 ri_main.drawIllegalFormTable(illegalIdx);
+
+                if ($("#illegalRule").prop("checked")) {
+                    return;
+                }
             }
             newRow.append($("<td>").addClass("rule-invalid").append("FALSE"));            
         } else {
@@ -357,7 +401,9 @@ const ri_main = {
     },
 
     eventHandler : {
-        onClickInput : () => {           
+        onClickInput : () => {
+            ri_main.initIllegal();
+
             const values = ri_main.getSeparatorValues();
             if (ri_main.isEmptyValue(values)) {
                 return;
@@ -431,6 +477,8 @@ const ri_main = {
         },
 
         onClickFormInput : () => {
+            ri_main.initIllegal();
+
             const values = ri_main.getFormTableValues();
             if (ri_main.isEmptyValue(values)) {
                 return;
