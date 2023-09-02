@@ -30,26 +30,24 @@ const rm_main = {
         $div.append($delRule);
 
         $div.append($("<input>", {
-            type: 'number', 
-            name: 'value', 
+            type: 'number',
             value: setDefaultString(rule.value, ""), 
             min: 0, 
             step: 1
         })).append(" 과(와) ");
 
         const $selTest = $("<select>");
-        $selTest.append($("<option>").attr("value", "").text("(조건선택)"));
         $selTest.append($("<option>").attr("value", "=").text("같으면"));
         $selTest.append($("<option>").attr("value", "!").text("다르면"));
         $selTest.append($("<option>").attr("value", ">").text("크면"));
         $selTest.append($("<option>").attr("value", ">=").text("크거나 같으면"));
         $selTest.append($("<option>").attr("value", "<").text("작으면"));
         $selTest.append($("<option>").attr("value", ">=").text("작거나 같으면"));
-        $selTest.val(setDefaultString(rule.text, ""));
+        $selTest.val(setDefaultString(rule.test, "="));
+        $div.append($selTest);
     
         $div.append($("<input>", {
             type: 'text',
-            name: 'colName', 
             value: setDefaultString(rule.dest, "")
         })).append(" 항목은 ");
 
@@ -99,12 +97,46 @@ const rm_main = {
         return $("<td>").append($textarea);
     },
 
+    getRules : ($row) => {
+        const rules = [];
+
+        $row.find(".rule-line").each(function() {
+            let rule = {
+                value : "",
+                test : "",
+                dest : "",
+                empty : ""
+            };
+            
+            const $this = $(this)
+            rule.value = $this.find("input").eq(0).val().trim();
+            rule.test = $this.find("select").eq(0).val();
+            rule.dest = $this.find("input").eq(1).val().trim();
+            rule.empty = $this.find("select").eq(1).val();
+
+            if (rule.value.length > 0 && rule.dest.length > 0) {
+                rules.push(rule);
+            }
+        });
+
+        return rules;
+    },
+
     getRow : ($row) => {
         // 파라메터는 JQuery TR
+        const memo = $row.find(".column-memo").val().trim();
+
         const column = {}    
-        column.name = $row.find(".column-name").val();
-        column.rules = [];
-        column.memo = rm_main.replaceNewLineToHtml($row.find(".column-memo").val());
+        column.name = $row.find(".column-name").val().trim();        
+
+        rules = rm_main.getRules($row);
+        if (rules.length > 0) {
+            column.rules = rules;
+        }
+
+        if (memo.length > 0) {
+            column.memo = memo;
+        }
         return column;
     },
 
@@ -155,7 +187,7 @@ const rm_main = {
             return;
         }
 
-        const jsonCode = "const ri_rule = " + JSON.stringify(rule, null, 2);
+        const jsonCode = "const ri_rule = " + JSON.stringify(rule);
         const blob = new Blob([jsonCode], { type: "text/javascript" });
         saveAs(blob, "rule.js");
     },
@@ -188,12 +220,24 @@ const rm_main = {
                 const $row = $(this);
                 
                 // column name
-                const column = {
-                    name: $row.find("td:eq(1) input").val(),
-                    rules: [],
-                    memo: rm_main.replaceNewLineToHtml($row.find("td:eq(3) textarea").val())
-                };
+                const column = {};
+
+                const name = $row.find("td:eq(1) input").val().trim();
+                const rules = rm_main.getRules($row.find("td:eq(2) .cell-rule"));
+                const memo = rm_main.replaceNewLineToHtml($row.find("td:eq(3) textarea").val().trim());
                 
+                if (name.length == 0) {
+                    return;
+                }
+
+                column.name = name;
+                if (rules.length > 0) {
+                    column.rules = rules;
+                }
+                if (memo.length > 0) {
+                    column.memo = memo;
+                }
+
                 // rule
                 rule.cols.push(column);
             });
